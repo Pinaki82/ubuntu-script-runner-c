@@ -1,4 +1,4 @@
-// Last Change: 2023-06-03  Saturday: 01:44:24 PM
+// Last Change: 2023-06-04  Sunday: 10:32:27 PM
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
   *totalLines = temp01;
 
   // Calculate the total number of lines in the file
-  while(fgets(buffer, sizeof(buffer), file) != NULL) {
+  while((fgets(buffer, sizeof(buffer), file) != NULL) && (currentLine < *totalLines) && (strlen(buffer) < MAXLINELEN)) {
     (*totalLines)++;
   }
 
@@ -73,5 +73,26 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
 }
 
 int main() {
+  FILE *file = fopen("../example.txt", "r");
+
+  if(file == NULL) {
+    (void)printf("Failed to open the file.\n");
+    return 1;
+  }
+
+  int totalLines;
+  int lineNumber = 2;
+  char **lineContents = NULL;
+  // Call the readLineFromFile function to read the contents of line number 2
+  readLineFromFile(file, &totalLines, lineNumber, &lineContents, 0);
+
+  // Print the contents of line number 2
+  if(lineContents != NULL) {
+    (void)printf("Line %d: %s\n", lineNumber, *lineContents);
+    free(lineContents); // Free the allocated memory for lineContents
+  }
+
+  (void)fclose(file); // Close the file
+  return 0;
 }
 
