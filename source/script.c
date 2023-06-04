@@ -1,4 +1,4 @@
-// Last Change: 2023-06-04  Sunday: 10:32:27 PM
+// Last Change: 2023-06-04  Sunday: 11:46:49 PM
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
   *totalLines = temp01;
 
   // Calculate the total number of lines in the file
-  while((fgets(buffer, sizeof(buffer), file) != NULL) && (currentLine < *totalLines) && (strlen(buffer) < MAXLINELEN)) {
+  while((fgets(buffer, sizeof(buffer), file) != NULL) && (strlen(buffer) < MAXLINELEN)) {
     (*totalLines)++;
   }
 
