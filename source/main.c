@@ -73,26 +73,5 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
 }
 
 int main() {
-  FILE *file = fopen("../example.txt", "r");
-
-  if(file == NULL) {
-    (void)printf("Failed to open the file.\n");
-    return 1;
-  }
-
-  int totalLines;
-  int lineNumber = 2;
-  char **lineContents = NULL;
-  // Call the readLineFromFile function to read the contents of line number 2
-  readLineFromFile(file, &totalLines, lineNumber, &lineContents, 0);
-
-  // Print the contents of line number 2
-  if(lineContents != NULL) {
-    (void)printf("Line %d: %s\n", lineNumber, *lineContents);
-    free(lineContents); // Free the allocated memory for lineContents
-  }
-
-  (void)fclose(file); // Close the file
-  return 0;
 }
 
