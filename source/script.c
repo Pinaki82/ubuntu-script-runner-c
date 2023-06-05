@@ -1,4 +1,4 @@
-// Last Change: 2023-06-04  Sunday: 11:46:49 PM
+// Last Change: 2023-06-05  Monday: 03:13:05 PM
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +26,10 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
   // Calculate the total number of lines in the file
   while((fgets(buffer, sizeof(buffer), file) != NULL) && (strlen(buffer) < MAXLINELEN)) {
     (*totalLines)++;
+
+    if(feof(file)) { // Check if the file pointer is at the end of the file
+      break;
+    }
   }
 
   // Rewind the file pointer to the beginning
