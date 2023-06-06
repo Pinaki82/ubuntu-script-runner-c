@@ -1,4 +1,4 @@
-// Last Change: 2023-06-06  Tuesday: 10:09:02 PM
+// Last Change: 2023-06-06  Tuesday: 10:11:59 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@
 //#include "sf_c.h"
 
 #define MAXLINELEN 2048
+#define SUDECOMMAND  "sudo"
 
 int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineContents, int freeMemory);
 void package_manager(char *package_manager_name, int freememory);
