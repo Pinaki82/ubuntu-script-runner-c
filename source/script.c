@@ -1,4 +1,4 @@
-// Last Change: 2023-06-06  Tuesday: 09:59:06 PM
+// Last Change: 2023-06-06  Tuesday: 10:09:02 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,7 +81,7 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
 
 void package_manager(char *package_manager_name, int freememory) {
   int totalLines = 0;
-  int lineNumber = 0;
+  int lineNumber = 0; // the first line, also initialise the variable
   char **lineContents = NULL;
   FILE  *fp;      /* input-file pointer */
   char  *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */ /* use extension within double quotes */
@@ -96,11 +96,11 @@ void package_manager(char *package_manager_name, int freememory) {
     // Call the readLineFromFile function to read the contents of line number 2
     readLineFromFile(fp, &totalLines, lineNumber, &lineContents, 0);
 
-    // Print the contents of line number 0
+    /* copy the contents of the line no. 0 to the variable package_manager_name
+      and pass it to the function's argument variable pointer, package_manager_name */
     if(lineContents != NULL) {
       /*(void)printf("Line %d: %s\n", lineNumber, *lineContents);*/
       strncpy(package_manager_name, *lineContents, MAXLINELEN);
-      /*(void)printf("Line %d: %s\n", lineNumber, package_manager_name);*/
     }
 
     if((fclose(fp) == EOF) && (freememory == 0))  {    /* close input file */
@@ -141,7 +141,7 @@ int main() {
 
   (void)fclose(file); // Close the file
   char package_manager_name[MAXLINELEN] = "";
-  package_manager(package_manager_name, 0);
+  package_manager(package_manager_name, 1);
   printf("Your package manager is: %s\n", package_manager_name);
   return 0;
 }
