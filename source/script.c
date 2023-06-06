@@ -1,12 +1,15 @@
-// Last Change: 2023-06-06  Tuesday: 11:39:52 AM
+// Last Change: 2023-06-06  Tuesday: 09:59:06 PM
+// #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 //#include "sf_c.h"
 
 #define MAXLINELEN 2048
 
 int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineContents, int freeMemory);
+void package_manager(char *package_manager_name, int freememory);
 
 // Function to read from a text file line by line
 // Arguments:
@@ -76,6 +79,46 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
   return 0;
 }
 
+void package_manager(char *package_manager_name, int freememory) {
+  int totalLines = 0;
+  int lineNumber = 0;
+  char **lineContents = NULL;
+  FILE  *fp;      /* input-file pointer */
+  char  *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */ /* use extension within double quotes */
+  fp  = fopen(fp_package_manager, "r");
+
+  if(fp == NULL) {
+    (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", fp_package_manager,  strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  else if(fp != NULL) {
+    // Call the readLineFromFile function to read the contents of line number 2
+    readLineFromFile(fp, &totalLines, lineNumber, &lineContents, 0);
+
+    // Print the contents of line number 0
+    if(lineContents != NULL) {
+      /*(void)printf("Line %d: %s\n", lineNumber, *lineContents);*/
+      strncpy(package_manager_name, *lineContents, MAXLINELEN);
+      /*(void)printf("Line %d: %s\n", lineNumber, package_manager_name);*/
+    }
+
+    if((fclose(fp) == EOF) && (freememory == 0))  {    /* close input file */
+      free(lineContents); // Free the allocated memory for lineContents
+      (void)fprintf(stderr, "\ncouldn't close file '%s'; %s\n", fp_package_manager,  strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+
+    else if(freememory == 1) {
+      free(lineContents); // Free the allocated memory for lineContents
+    }
+
+    else {
+      free(lineContents); // Free the allocated memory for lineContents
+    }
+  }
+}
+
 int main() {
   FILE *file = fopen("../example.txt", "r");
 
@@ -97,6 +140,9 @@ int main() {
   }
 
   (void)fclose(file); // Close the file
+  char package_manager_name[MAXLINELEN] = "";
+  package_manager(package_manager_name, 0);
+  printf("Your package manager is: %s\n", package_manager_name);
   return 0;
 }
 
