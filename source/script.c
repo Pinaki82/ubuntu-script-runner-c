@@ -1,4 +1,4 @@
-// Last Change: 2023-06-06  Tuesday: 10:11:59 PM
+// Last Change: 2023-06-07  Wednesday: 01:25:30 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 #define MAXLINELEN 2048
 #define SUDECOMMAND  "sudo"
 
-int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineContents, int freeMemory);
+int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);;
 void package_manager(char *package_manager_name, int freememory);
 
 // Function to read from a text file line by line
@@ -21,11 +21,9 @@ void package_manager(char *package_manager_name, int freememory);
 //   freeMemory: A flag indicating whether to free the allocated memory (0 - don't free, 1 - free)
 // Returns:
 //   0 if the function executes successfully, -1 if there is a memory allocation error
-int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineContents, int freeMemory) {
+int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
   int currentLine = 0;
-  char buffer[MAXLINELEN] = ""; // Use buffer size of 2048
-  int temp01 = 0;
-  *totalLines = temp01;
+  char buffer[1024];
 
   // Calculate the total number of lines in the file
   while((fgets(buffer, sizeof(buffer), file) != NULL) && (strlen(buffer) < MAXLINELEN)) {
@@ -38,12 +36,6 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
 
   // Rewind the file pointer to the beginning
   rewind(file);
-
-  // If the user only wants to know the total number of lines, return here
-  if(lineNumber == 0 && lineContents == NULL) {
-    return 0;
-  }
-
   // Allocate memory for the line contents array
   *lineContents = (char **)malloc((size_t)(*totalLines) * sizeof(char *));
 
@@ -54,27 +46,7 @@ int readLineFromFile(FILE *file, int *totalLines, int lineNumber, char ***lineCo
   // Read the file line by line and store the contents in the line contents array
   while(fgets(buffer, sizeof(buffer), file) != NULL) {
     (*lineContents)[currentLine] = strdup(buffer);
-
-    // If the line number matches the requested line, store the contents
-    if(currentLine == lineNumber - 1 && lineContents != NULL) {
-      *(*lineContents + currentLine) = strdup(buffer); // Update line storage
-    }
-
     currentLine++;
-  }
-
-  // If the user only wants to know the contents of a specific line, return here
-  if(lineNumber != 0 && lineContents != NULL) {
-    return 0;
-  }
-
-  // If the user wants to free the allocated memory, do so
-  if(freeMemory) {
-    for(int i = 0; i < *totalLines; i++) {
-      free((*lineContents)[i]);
-    }
-
-    free(*lineContents);
   }
 
   return 0;
@@ -95,7 +67,7 @@ void package_manager(char *package_manager_name, int freememory) {
 
   else if(fp != NULL) {
     // Call the readLineFromFile function to read the contents of line number 2
-    readLineFromFile(fp, &totalLines, lineNumber, &lineContents, 0);
+    readLineFromFile(fp, &totalLines, &lineContents);
 
     /* copy the contents of the line no. 0 to the variable package_manager_name
       and pass it to the function's argument variable pointer, package_manager_name */
@@ -121,9 +93,9 @@ void package_manager(char *package_manager_name, int freememory) {
 }
 
 int main() {
-  FILE *file = fopen("../example.txt", "r");
+  FILE *file01 = fopen("../example.txt", "r");
 
-  if(file == NULL) {
+  if(file01 == NULL) {
     (void)printf("Failed to open the file.\n");
     return 1;
   }
@@ -132,7 +104,7 @@ int main() {
   int lineNumber = 2;
   char **lineContents = NULL;
   // Call the readLineFromFile function to read the contents of line number 2
-  readLineFromFile(file, &totalLines, lineNumber, &lineContents, 0);
+  readLineFromFile(file01, &totalLines, &lineContents);
 
   // Print the contents of line number 2
   if(lineContents != NULL) {
@@ -140,10 +112,43 @@ int main() {
     free(lineContents); // Free the allocated memory for lineContents
   }
 
-  (void)fclose(file); // Close the file
+  (void)fclose(file01); // Close the file
+  // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name, 1);
   printf("Your package manager is: %s\n", package_manager_name);
+  /* part 3 */
+  FILE *file02 = fopen("../.config/scriptrunner/renew_system.txt", "r");
+
+  if(file02 == NULL) {
+    (void)printf("Failed to open the file.\n");
+    return 1;
+  }
+
+  int totalLines2 = 0;
+  char *tmpstr = "";
+  char **lineContentsOfRenew = &tmpstr;
+  // Call the readLineFromFile function to read the contents of the file
+  int result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
+
+  if(result != 0) {
+    printf("Error reading file.\n");
+    fclose(file02);
+    return 1;
+  }
+
+  // Print the contents of each line
+  for(int lineNumber = 1; lineNumber <= lineContentsOfRenew; lineNumber++) {
+    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+  }
+
+  // Free the allocated memory for lineContents
+  for(int i = 0; i < lineContentsOfRenew; i++) {
+    free(lineContentsOfRenew[i]);
+  }
+
+  free(lineContentsOfRenew);
+  fclose(file02); // Close the file
   return 0;
 }
 
