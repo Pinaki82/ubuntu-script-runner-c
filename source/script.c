@@ -1,4 +1,4 @@
-// Last Change: 2023-06-07  Wednesday: 01:25:30 PM
+// Last Change: 2023-06-08  Thursday: 12:05:02 AM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +22,9 @@ void package_manager(char *package_manager_name, int freememory);
 // Returns:
 //   0 if the function executes successfully, -1 if there is a memory allocation error
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
+  *totalLines = 0;
   int currentLine = 0;
-  char buffer[1024];
+  char buffer[MAXLINELEN];
 
   // Calculate the total number of lines in the file
   while((fgets(buffer, sizeof(buffer), file) != NULL) && (strlen(buffer) < MAXLINELEN)) {
@@ -45,7 +46,11 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
 
   // Read the file line by line and store the contents in the line contents array
   while(fgets(buffer, sizeof(buffer), file) != NULL) {
-    (*lineContents)[currentLine] = strdup(buffer);
+    if(lineContents == NULL) {
+      return -1;
+    }
+
+    (*lineContents)[currentLine] = strndup(buffer, MAXLINELEN);
     currentLine++;
   }
 
@@ -65,31 +70,29 @@ void package_manager(char *package_manager_name, int freememory) {
     exit(EXIT_FAILURE);
   }
 
-  else if(fp != NULL) {
-    // Call the readLineFromFile function to read the contents of line number 2
-    readLineFromFile(fp, &totalLines, &lineContents);
+  // Call the readLineFromFile function to read the contents of the file
+  int result = readLineFromFile(fp, &totalLines, &lineContents);
 
-    /* copy the contents of the line no. 0 to the variable package_manager_name
-      and pass it to the function's argument variable pointer, package_manager_name */
-    if(lineContents != NULL) {
-      /*(void)printf("Line %d: %s\n", lineNumber, *lineContents);*/
-      strncpy(package_manager_name, *lineContents, MAXLINELEN);
-    }
-
-    if((fclose(fp) == EOF) && (freememory == 0))  {    /* close input file */
-      free(lineContents); // Free the allocated memory for lineContents
-      (void)fprintf(stderr, "\ncouldn't close file '%s'; %s\n", fp_package_manager,  strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-
-    else if(freememory == 1) {
-      free(lineContents); // Free the allocated memory for lineContents
-    }
-
-    else {
-      free(lineContents); // Free the allocated memory for lineContents
-    }
+  if(result != 0) {
+    (void)fprintf(stderr, "\nError reading file. '%s'; %s\n", fp_package_manager,  strerror(errno));
+    (void)fclose(fp);
   }
+
+  /* copy the contents of the line no. 0 to the variable package_manager_name
+    and pass it to package_manager_name */
+  if(lineContents[0] != NULL) {
+    strncpy(package_manager_name, *(lineContents + 0), MAXLINELEN);
+  }
+
+  // Free the allocated memory for lineContents
+  for(int i = 0; i < totalLines; i++) {
+    free(lineContents[i]);
+  }
+
+  free(lineContents);
+  lineContents = NULL;
+  (void)fclose(fp); // Close the file
+  // Set lineContentsOfRenew to NULL to prevent segmentation fault
 }
 
 int main() {
@@ -103,15 +106,33 @@ int main() {
   int totalLines;
   int lineNumber = 2;
   char **lineContents = NULL;
-  // Call the readLineFromFile function to read the contents of line number 2
-  readLineFromFile(file01, &totalLines, &lineContents);
+  char linecontentsCopy[MAXLINELEN] = "";
+  // Call the readLineFromFile function to read the contents of the file
+  int result = readLineFromFile(file01, &totalLines, &lineContents);
 
-  // Print the contents of line number 2
-  if(lineContents != NULL) {
-    (void)printf("Line %d: %s\n", lineNumber, *lineContents);
-    free(lineContents); // Free the allocated memory for lineContents
+  if(result != 0) {
+    (void)fprintf(stderr, "\nError reading file.\n");
+    (void)fclose(file01);
+    return 1;
   }
 
+  /* copy the contents of the line no. 0 to the variable package_manager_name
+    and pass it to package_manager_name */
+  if(lineContents[lineNumber] != NULL) {
+    strncpy(linecontentsCopy, *(lineContents + lineNumber), MAXLINELEN);
+  }
+
+  // Print the contents of line number 2
+  (void)printf("Line %d: %s\n", lineNumber, linecontentsCopy);
+
+  // Free the allocated memory for lineContents
+  for(int i = 0; i < totalLines; i++) {
+    free(lineContents[i]);
+    lineContents[i] = NULL;
+  }
+
+  free(lineContents);
+  lineContents = NULL;
   (void)fclose(file01); // Close the file
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
@@ -129,26 +150,29 @@ int main() {
   char *tmpstr = "";
   char **lineContentsOfRenew = &tmpstr;
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
+  result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
 
   if(result != 0) {
     printf("Error reading file.\n");
-    fclose(file02);
+    (void)fclose(file02);
     return 1;
   }
 
   // Print the contents of each line
-  for(int lineNumber = 1; lineNumber <= lineContentsOfRenew; lineNumber++) {
+  for(lineNumber = 1; lineNumber <= totalLines2 && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
     (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
   }
 
   // Free the allocated memory for lineContents
-  for(int i = 0; i < lineContentsOfRenew; i++) {
+  for(int i = 0; i < totalLines2; i++) {
     free(lineContentsOfRenew[i]);
+    lineContentsOfRenew[i] = NULL;
   }
 
   free(lineContentsOfRenew);
-  fclose(file02); // Close the file
+  lineContentsOfRenew = NULL;
+  // Free the allocated memory for lineContents
+  (void)fclose(file02); // Close the file
   return 0;
 }
 
