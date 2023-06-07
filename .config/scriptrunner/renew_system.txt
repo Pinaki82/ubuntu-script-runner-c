@@ -1,0 +1,7 @@
+yes | sudo apt update
+yes | sudo apt list --upgradable
+yes | sudo apt upgrade
+yes | sudo apt update
+yes | sudo apt install -f
+yes | sudo apt autoremove
+yes | sudo apt autoclean
