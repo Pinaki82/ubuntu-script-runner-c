@@ -1,4 +1,4 @@
-// Last Change: 2023-06-08  Thursday: 12:05:02 AM
+// Last Change: 2023-06-08  Thursday: 12:12:28 AM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +92,6 @@ void package_manager(char *package_manager_name, int freememory) {
   free(lineContents);
   lineContents = NULL;
   (void)fclose(fp); // Close the file
-  // Set lineContentsOfRenew to NULL to prevent segmentation fault
 }
 
 int main() {
