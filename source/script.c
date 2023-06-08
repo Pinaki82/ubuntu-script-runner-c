@@ -11,6 +11,7 @@
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);;
 void package_manager(char *package_manager_name, int freememory);
+int renewsys(void);
 int package_installer(void);
 
 // Function to read from a text file line by line
@@ -95,6 +96,44 @@ void package_manager(char *package_manager_name, int freememory) {
   (void)fclose(fp); // Close the file
 }
 
+int renewsys(void) {
+  /* part 3 */
+  FILE *file02 = fopen("../.config/scriptrunner/renew_system.txt", "r");
+
+  if(file02 == NULL) {
+    (void)printf("Failed to open the file.\n");
+    return 1;
+  }
+
+  int totalLines2 = 0;
+  char *tmpstr = "";
+  char **lineContentsOfRenew = &tmpstr;
+  // Call the readLineFromFile function to read the contents of the file
+  int result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
+
+  if(result != 0) {
+    printf("Error reading file.\n");
+    (void)fclose(file02);
+    return 1;
+  }
+
+  // Print the contents of each line
+  for(int lineNumber = 1; lineNumber <= totalLines2 && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
+    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+  }
+
+  // Free the allocated memory for lineContents
+  for(int i = 0; i < totalLines2; i++) {
+    free(lineContentsOfRenew[i]);
+    lineContentsOfRenew[i] = NULL;
+  }
+
+  free(lineContentsOfRenew);
+  lineContentsOfRenew = NULL;
+  // Free the allocated memory for lineContents
+  (void)fclose(file02); // Close the file
+}
+
 int package_installer(void) {
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name, 0);
@@ -145,41 +184,7 @@ int main() {
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name, 1);
   printf("Your package manager is: %s\n", package_manager_name);
-  /* part 3 */
-  FILE *file02 = fopen("../.config/scriptrunner/renew_system.txt", "r");
-
-  if(file02 == NULL) {
-    (void)printf("Failed to open the file.\n");
-    return 1;
-  }
-
-  int totalLines2 = 0;
-  char *tmpstr = "";
-  char **lineContentsOfRenew = &tmpstr;
-  // Call the readLineFromFile function to read the contents of the file
-  result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
-
-  if(result != 0) {
-    printf("Error reading file.\n");
-    (void)fclose(file02);
-    return 1;
-  }
-
-  // Print the contents of each line
-  for(lineNumber = 1; lineNumber <= totalLines2 && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
-    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
-  }
-
-  // Free the allocated memory for lineContents
-  for(int i = 0; i < totalLines2; i++) {
-    free(lineContentsOfRenew[i]);
-    lineContentsOfRenew[i] = NULL;
-  }
-
-  free(lineContentsOfRenew);
-  lineContentsOfRenew = NULL;
-  // Free the allocated memory for lineContents
-  (void)fclose(file02); // Close the file
+  (void)renewsys();
   (void)package_installer();
   return 0;
 }
