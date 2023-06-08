@@ -10,7 +10,7 @@
 #define SUDECOMMAND  "sudo"
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
-void package_manager(char *package_manager_name, int freememory);
+void package_manager(char *package_manager_name);
 int renewsys(void);
 int package_installer(void);
 
@@ -59,7 +59,7 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
   return 0;
 }
 
-void package_manager(char *package_manager_name, int freememory) {
+void package_manager(char *package_manager_name) {
   int totalLines = 0;
   int lineNumber = 0; // the first line, also initialise the variable
   char **lineContents = NULL;
@@ -136,7 +136,7 @@ int renewsys(void) {
 
 int package_installer(void) {
   char package_manager_name[MAXLINELEN] = "";
-  package_manager(package_manager_name, 0);
+  package_manager(package_manager_name);
   (void)printf("manager: %s\n", package_manager_name);
   return 0;
 }
@@ -182,7 +182,7 @@ int main() {
   (void)fclose(file01); // Close the file
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
-  package_manager(package_manager_name, 1);
+  package_manager(package_manager_name);
   printf("Your package manager is: %s\n", package_manager_name);
   (void)renewsys();
   (void)package_installer();
