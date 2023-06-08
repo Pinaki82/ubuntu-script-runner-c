@@ -9,7 +9,7 @@
 #define MAXLINELEN 2048
 #define SUDECOMMAND  "sudo"
 
-int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);;
+int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
 void package_manager(char *package_manager_name, int freememory);
 int renewsys(void);
 int package_installer(void);
