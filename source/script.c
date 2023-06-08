@@ -7,6 +7,7 @@
 //#include "sf_c.h"
 
 #define MAXLINELEN 2048
+#define PIPE_YES "yes | "
 #define SUDECOMMAND  "sudo"
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
@@ -61,7 +62,6 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
 
 void package_manager(char *package_manager_name) {
   int totalLines = 0;
-  int lineNumber = 0; // the first line, also initialise the variable
   char **lineContents = NULL;
   FILE  *fp;      /* input-file pointer */
   char  *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */ /* use extension within double quotes */
@@ -138,8 +138,43 @@ int package_installer(void) {
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
   (void)printf("manager: %s\n", package_manager_name);
+  FILE *file = fopen("../.config/scriptrunner/install.txt", "r");
+
+  if(file == NULL) {
+    (void)printf("Failed to open the file.\n");
+    return 1;
+  }
+
+  int totalLines = 0;
+  char *tmpstr = "";
+  char **lineContents = &tmpstr;
+  // Call the readLineFromFile function to read the contents of the file
+  int result = readLineFromFile(file, &totalLines, &lineContents);
+
+  if(result != 0) {
+    printf("Error reading file.\n");
+    (void)fclose(file);
+    return 1;
+  }
+
+  // Print the contents of each line
+  for(int lineNumber = 1; lineNumber <= totalLines && lineContents[lineNumber - 1] != NULL; lineNumber++) {
+    (void)printf("Line %d: %s", lineNumber, lineContents[lineNumber - 1]);
+  }
+
+  // Free the allocated memory for lineContents
+  for(int i = 0; i < totalLines; i++) {
+    free(lineContents[i]);
+    lineContents[i] = NULL;
+  }
+
+  free(lineContents);
+  lineContents = NULL;
+  // Free the allocated memory for lineContents
+  (void)fclose(file); // Close the file
   return 0;
 }
+
 
 int main() {
   FILE *file01 = fopen("../example.txt", "r");
