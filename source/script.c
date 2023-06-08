@@ -11,6 +11,7 @@
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);;
 void package_manager(char *package_manager_name, int freememory);
+int package_installer(void);
 
 // Function to read from a text file line by line
 // Arguments:
@@ -94,6 +95,13 @@ void package_manager(char *package_manager_name, int freememory) {
   (void)fclose(fp); // Close the file
 }
 
+int package_installer(void) {
+  char package_manager_name[MAXLINELEN] = "";
+  package_manager(package_manager_name, 0);
+  (void)printf("manager: %s\n", package_manager_name);
+  return 0;
+}
+
 int main() {
   FILE *file01 = fopen("../example.txt", "r");
 
@@ -172,6 +180,7 @@ int main() {
   lineContentsOfRenew = NULL;
   // Free the allocated memory for lineContents
   (void)fclose(file02); // Close the file
+  (void)package_installer();
   return 0;
 }
 
