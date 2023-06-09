@@ -1,16 +1,19 @@
-// Last Change: 2023-06-08  Thursday: 12:12:28 AM
+// Last Change: 2023-06-09  Friday: 11:41:35 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-//#include "sf_c.h"
+#include "sf_c.h"
 
 #define MAXLINELEN 2048
-#define PIPE_YES "yes | "
-#define SUDECOMMAND  "sudo"
+#define MAX_STRING_LENGTH_4_SPECIAL 100
+#define SUDOCOMMAND  "sudo"
+#define  INSTALLCOMMAND  "install"
+#define strndup  sf_strndup
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
+void copyStringWithoutPrefix(const char *input, char *output, const char *prefix);
 void package_manager(char *package_manager_name);
 int renewsys(void);
 int package_installer(void);
@@ -58,6 +61,17 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
   }
 
   return 0;
+}
+
+void copyStringWithoutPrefix(const char *input, char *output, const char *prefix) {
+  // Check if the input starts with the specified prefix
+  if(strncmp(input, prefix, strlen(prefix)) == 0) {
+    // Skip the prefix by moving the input pointer forward
+    input += strlen(prefix);
+  }
+
+  // Copy the remaining part of the input to the output string
+  strcpy(output, input);
 }
 
 void package_manager(char *package_manager_name) {
@@ -132,6 +146,7 @@ int renewsys(void) {
   lineContentsOfRenew = NULL;
   // Free the allocated memory for lineContents
   (void)fclose(file02); // Close the file
+  return 0;
 }
 
 int package_installer(void) {
@@ -159,7 +174,45 @@ int package_installer(void) {
 
   // Print the contents of each line
   for(int lineNumber = 1; lineNumber <= totalLines && lineContents[lineNumber - 1] != NULL; lineNumber++) {
-    (void)printf("Line %d: %s", lineNumber, lineContents[lineNumber - 1]);
+    // if the first char of the line is '#', ignore the line alltogether
+    if(lineContents[lineNumber - 1][0] == '#') {
+      continue;
+    }
+
+    // else if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
+    else if(lineContents[lineNumber - 1][0] == '\0' || lineContents[lineNumber - 1][0] == '\n' || lineContents[lineNumber - 1][0] == '\t') {
+      continue;
+    }
+
+    // else if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
+    else if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
+      /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContents[lineNumber - 1]);*/
+      char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
+      /*(void)printf("input line is: %s\n", inputLine);*/
+      copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
+      /*(void)printf("input after removing the prefix: %s\n", lineContentsreduced);*/
+      (void)printf("Line %d: %s", lineNumber, lineContentsreduced);
+      continue;
+    }
+
+    else {
+      char tmpstr2[] = "";
+      char *the_package_manager = tmpstr2;
+      char totalcommandtopass[MAXLINELEN] = "";
+      package_manager(the_package_manager);
+      /*(void)printf("The package manager found in the fn package installer: %s\n", the_package_manager);*/
+      /* concatenate SUDOCOMMAND, the_package_manager, INSTALLCOMMAND, and the contents of the line */
+      sf_strncat(totalcommandtopass, SUDOCOMMAND, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, the_package_manager, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, INSTALLCOMMAND, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
+      (void)printf("Line %d: %s", lineNumber, totalcommandtopass);
+    }
   }
 
   // Free the allocated memory for lineContents

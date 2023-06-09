@@ -1,18 +1,18 @@
 # =================================================================
 # Activate default Ubuntu repositories.
 # =================================================================
-yes | sudo add-apt-repository universe && \
-yes | sudo add-apt-repository multiverse && \
-yes | sudo add-apt-repository restricted && \
-yes | sudo apt update && \
+special: yes | sudo add-apt-repository universe
+special: yes | sudo add-apt-repository multiverse
+special: yes | sudo add-apt-repository restricted
+special: yes | sudo apt update
 # =================================================================
 # Ubuntu repositories (END).
 # =================================================================
 
-sudo apt install gufw && \
-sudo apt install resolvconf && \
-sudo apt install clamtk-gnome && \
-sudo apt install chkrootkit && \
-sudo apt install rkhunter && \
-sudo apt install firejail && \
+gufw
+resolvconf
+clamtk-gnome
+chkrootkit
+rkhunter
+firejail
 # screen: req. by i2pdbrowser
