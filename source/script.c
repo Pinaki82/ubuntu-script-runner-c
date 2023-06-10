@@ -267,10 +267,6 @@ int package_installer(void) { // app installer
 }
 
 int main() {
-  int totalLines;
-  int lineNumber = 2;
-  char **lineContents = NULL;
-  char linecontentsCopy[MAXLINELEN] = "";
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
