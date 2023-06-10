@@ -273,10 +273,10 @@ int main() {
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
-  printf("Your package manager is: %s\n", package_manager_name);
+  printf("package manager: %s\n", package_manager_name);
   char installcommandname[MAXLINELEN] = "";
   install_command(installcommandname);
-  printf("Your install command is: %s\n", installcommandname);
+  printf("install command: %s\n", installcommandname);
   (void)renewsys();
   (void)package_installer();
   return 0;
