@@ -8,6 +8,7 @@
 
 #define MAXLINELEN 2048
 #define MAX_STRING_LENGTH_4_SPECIAL 100
+#define PIPE_YES  "yes |"
 #define SUDOCOMMAND  "sudo"
 #define strndup  sf_strndup
 
@@ -242,6 +243,8 @@ int package_installer(void) { // app installer
       /*(void)printf("The package manager found in the fn package_manager: %s\n", the_package_manager);*/
       /*(void)printf("The install command found in the fn install_command: %s\n", the_command_2_install_packages);*/
       /* concatenate SUDOCOMMAND, the_package_manager, INSTALLCOMMAND, and the contents of the line */
+      sf_strncat(totalcommandtopass, PIPE_YES, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, SUDOCOMMAND, MAXLINELEN);
       sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, the_package_manager, MAXLINELEN);
