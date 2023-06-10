@@ -186,7 +186,7 @@ int renewsys(void) {
 int package_installer(void) { // app installer
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
-  (void)printf("manager: %s\n", package_manager_name);
+  /*(void)printf("manager: %s\n", package_manager_name);*/
   FILE *file = fopen("../.config/scriptrunner/apps.txt", "r");
 
   if(file == NULL) {
@@ -267,44 +267,10 @@ int package_installer(void) { // app installer
 }
 
 int main() {
-  FILE *file01 = fopen("../example.txt", "r");
-
-  if(file01 == NULL) {
-    (void)printf("Failed to open the file.\n");
-    return 1;
-  }
-
   int totalLines;
   int lineNumber = 2;
   char **lineContents = NULL;
   char linecontentsCopy[MAXLINELEN] = "";
-  // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file01, &totalLines, &lineContents);
-
-  if(result != 0) {
-    (void)fprintf(stderr, "\nError reading file.\n");
-    (void)fclose(file01);
-    return 1;
-  }
-
-  /* copy the contents of the line no. 0 to the variable package_manager_name
-    and pass it to package_manager_name */
-  if(lineContents[lineNumber] != NULL) {
-    strncpy(linecontentsCopy, *(lineContents + lineNumber), MAXLINELEN);
-  }
-
-  // Print the contents of line number 2
-  (void)printf("Line %d: %s\n", lineNumber, linecontentsCopy);
-
-  // Free the allocated memory for lineContents
-  for(int i = 0; i < totalLines; i++) {
-    free(lineContents[i]);
-    lineContents[i] = NULL;
-  }
-
-  free(lineContents);
-  lineContents = NULL;
-  (void)fclose(file01); // Close the file
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
