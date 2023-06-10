@@ -22,9 +22,7 @@ int package_installer(void);
 // Arguments:
 //   file: The file pointer to read from
 //   totalLines: A pointer to store the total number of lines in the file
-//   lineNumber: The line number the user wants to read
 //   lineContents: A pointer to store the contents of the requested line
-//   freeMemory: A flag indicating whether to free the allocated memory (0 - don't free, 1 - free)
 // Returns:
 //   0 if the function executes successfully, -1 if there is a memory allocation error
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
