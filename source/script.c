@@ -123,6 +123,7 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
     if(fp2 == NULL) { // if not, exit permanently
       (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", expandedPath,  strerror(errno));
       free(expandedPath);
+      (void)fprintf(stderr, "\ncouldn't open file '%s', either; %s\n", fp_package_manager,  strerror(errno));
       exit(EXIT_FAILURE);
     }
 
@@ -259,7 +260,7 @@ int renewsys(void) {
   FILE *file02 = NULL;      /* input-file pointer */
   char *tmpstr = "";
   char **lineContentsOfRenew = &tmpstr;
-  const char *renew_system_in_home_config = "~/.config/scriptrunner/installcommand.txt"; /* input-file name */
+  const char *renew_system_in_home_config = "~/.config/scriptrunner/renew_system.txt"; /* input-file name */
   char *expandedPath = expand_tilde(renew_system_in_home_config);
 
   if(home_config == 0) { // found in the root dir of the program
@@ -298,26 +299,24 @@ int renewsys(void) {
     return 1;
   }
 
-  char **lineContents = NULL;
-
   // Print the contents of each line
-  for(int lineNumber = 2 /*from 1, cant read ln. 0*/; lineNumber <= totalLines && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
+  for(int lineNumber = 1; lineNumber <= totalLines && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
     // if the first char of the line is '#', ignore the line alltogether
-    if(lineContents[lineNumber - 1][0] == '#') {
+    if(lineContentsOfRenew[lineNumber - 1][0] == '#') {
       continue;
     }
 
     // else if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
-    else if(lineContents[lineNumber - 1][0] == '\0' || lineContents[lineNumber - 1][0] == '\n' || lineContents[lineNumber - 1][0] == '\t') {
+    else if(lineContentsOfRenew[lineNumber - 1][0] == '\0' || lineContentsOfRenew[lineNumber - 1][0] == '\n' || lineContentsOfRenew[lineNumber - 1][0] == '\t') {
       continue;
     }
 
     // else if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
-    else if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
-      /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContents[lineNumber - 1]);*/
+    else if(strstr(lineContentsOfRenew[lineNumber - 1], "special: ") != NULL) {
+      /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContentsOfRenew[lineNumber - 1]);*/
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
-      sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
+      sf_strncpy(inputLine, lineContentsOfRenew[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
       /*(void)printf("input line is: %s\n", inputLine);*/
       copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
       /*(void)printf("input after removing the prefix: %s\n", lineContentsreduced);*/
