@@ -102,14 +102,13 @@ char *expand_tilde(const char *path) {
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
   int totalLines = 0;
   char **lineContents = NULL;
-  FILE  *fp;      /* input-file pointer */
-  FILE *fp2;      /* input-file pointer */
+  FILE *fp = NULL;      /* input-file pointer */
+  FILE *fp2 = NULL;     /* input-file pointer */
   char *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */
-  const char *filePath = "~/.config/scriptrunner/package_manager.txt";
-  char *expandedPath = expand_tilde(filePath);
-  /*printf("expandedPath to your config dir: %s\n", expandedPath);*/
-  FILE *fp_package_manager_in_home_config = fopen(expandedPath, "r");
-  /*char *fp_package_manager_in_home_config = "$HOME/.config/scriptrunner/package_manager.txt";      /* input-file name */
+  const char *fp_package_manager_in_home_config = "~/.config/scriptrunner/package_manager.txt"; /* input-file name */
+  char *expandedPath = expand_tilde(fp_package_manager_in_home_config);
+  /*printf("expandedPath: %s\n", expandedPath);*/
+  // try in the root folder first
   fp  = fopen(fp_package_manager, "r");
 
   /*if(fp != NULL) {*/
@@ -117,17 +116,18 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
   /*}*/
 
   if(fp == NULL) { // try finding the file in the program's root directory (.config/scriptrunner)
-    (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", fp_package_manager,  strerror(errno));
+    /*(void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", fp_package_manager,  strerror(errno));*/
     // Check if the file is in the home (~/.config/scriptrunner) directory
     fp2 = fopen(expandedPath, "r");
 
     if(fp2 == NULL) { // if not, exit permanently
       (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", expandedPath,  strerror(errno));
+      free(expandedPath);
       exit(EXIT_FAILURE);
     }
 
     else { // means, the file is found in the home (~/.config/scriptrunner) directory, since (fp2 == NULL)
-      (void)printf("File opened: %s. HOME dir flag set to ON.\n", expandedPath);
+      /*(void)printf("File opened: %s. HOME dir flag set to ON.\n", expandedPath);*/
       home_config = 1; // from now on, consider that the file is in the home (~/.config/scriptrunner) directory // set the global flag on
     }
   }
@@ -175,38 +175,52 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
     (void)fclose(fp); // Close the file
   }
 
-  else if(home_config == 1) {
+  else if((home_config == 1) && (fp2 != NULL)) {
     (void)fclose(fp2); // Close the file
+    free(expandedPath);
   }
+
+  /*(void)printf("package_manager ran successfully!\n");*/
 }
 
 void install_command(char *command_2_install_apps) { // install, -S etc.
   int totalLines = 0;
   char **lineContents = NULL;
-  FILE *file;      /* input-file pointer */
+  FILE *file = NULL;      /* input-file pointer */
+  FILE *file02 = NULL;      /* input-file pointer */
   char *file_install_command = "../.config/scriptrunner/installcommand.txt";      /* input-file name */
-  char *file_install_command_in_home_config = "$HOME/.config/scriptrunner/installcommand.txt";      /* input-file name */
+  const char *file_install_command_in_home_config = "~/.config/scriptrunner/installcommand.txt"; /* input-file name */
+  char *expandedPath = expand_tilde(file_install_command_in_home_config);
 
+  //
   if(home_config == 0) {
-    file  = fopen(file_install_command, "r");
+    file = fopen(file_install_command, "r"); /* input-file pointer */
 
     if(file == NULL) {
       (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", file_install_command,  strerror(errno));
-      exit(EXIT_FAILURE);
     }
   }
 
-  else {
-    file  = fopen(file_install_command_in_home_config, "r");
+  else if(home_config == 1) {
+    file02  = fopen(expandedPath, "r");
 
-    if(file == NULL) {
-      (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", file_install_command_in_home_config,  strerror(errno));
+    if(file02 == NULL) {
+      (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", expandedPath,  strerror(errno));
+      free(expandedPath);
       exit(EXIT_FAILURE);
     }
   }
 
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file, &totalLines, &lineContents);
+  int result = '\0';
+
+  if(home_config == 0) {
+    result = readLineFromFile(file, &totalLines, &lineContents);
+  }
+
+  else if(home_config == 1) {
+    result = readLineFromFile(file02, &totalLines, &lineContents);
+  }
 
   if(result != 0) {
     (void)fprintf(stderr, "\nError reading file. '%s'; %s\n", file_install_command,  strerror(errno));
@@ -226,14 +240,27 @@ void install_command(char *command_2_install_apps) { // install, -S etc.
 
   free(lineContents);
   lineContents = NULL;
-  (void)fclose(file); // Close the file
+
+  if(home_config == 0) {
+    (void)fclose(file); // Close the file
+  }
+
+  else if((home_config == 1) && (file02 != NULL)) {
+    (void)fclose(file02); // Close the file
+    free(expandedPath);
+  }
+
+  /*(void)printf("install_command ran successfully!\n");*/
 }
 
 int renewsys(void) {
   int totalLines = 0;
-  FILE *file;
+  FILE *file = NULL;
+  FILE *file02 = NULL;      /* input-file pointer */
   char *tmpstr = "";
   char **lineContentsOfRenew = &tmpstr;
+  const char *renew_system_in_home_config = "~/.config/scriptrunner/installcommand.txt"; /* input-file name */
+  char *expandedPath = expand_tilde(renew_system_in_home_config);
 
   if(home_config == 0) { // found in the root dir of the program
     file = fopen("../.config/scriptrunner/renew_system.txt", "r");
@@ -244,17 +271,26 @@ int renewsys(void) {
     }
   }
 
-  else {
-    file = fopen("$HOME/.config/scriptrunner/renew_system.txt", "r");
+  else if(home_config == 1) {
+    file02 = fopen(expandedPath, "r");
 
-    if(file == NULL) {
+    if(file02 == NULL) {
       (void)printf("Failed to open the file.\n");
+      free(expandedPath);
       return 1;
     }
   }
 
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file, &totalLines, &lineContentsOfRenew);
+  int result = '\0';
+
+  if(home_config == 0) {
+    result = readLineFromFile(file, &totalLines, &lineContentsOfRenew);
+  }
+
+  else if(home_config == 1) {
+    result = readLineFromFile(file02, &totalLines, &lineContentsOfRenew);
+  }
 
   if(result != 0) {
     printf("Error reading file.\n");
@@ -267,6 +303,8 @@ int renewsys(void) {
     (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
   }
 
+  (void)printf("\n");
+
   // Free the allocated memory for lineContents
   for(int i = 0; i < totalLines; i++) {
     free(lineContentsOfRenew[i]);
@@ -275,8 +313,19 @@ int renewsys(void) {
 
   free(lineContentsOfRenew);
   lineContentsOfRenew = NULL;
+
   // Free the allocated memory for lineContents
   /*(void)fclose(file); // Close the file*/
+  if(home_config == 0) {
+    (void)fclose(file); // Close the file
+  }
+
+  else if((home_config == 1) && (file02 != NULL)) {
+    (void)fclose(file02); // Close the file
+    free(expandedPath);
+  }
+
+  /*(void)printf("renewsys ran successfully!\n");*/
   return 0;
 }
 
@@ -284,7 +333,10 @@ int package_installer(void) { // app installer
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
   /*(void)printf("manager: %s\n", package_manager_name);*/
-  FILE *file;
+  FILE *file = NULL;
+  FILE *file02 = NULL;      /* input-file pointer */
+  const char *package_installer_in_home_config = "~/.config/scriptrunner/apps.txt"; /* input-file name */
+  char *expandedPath = expand_tilde(package_installer_in_home_config);
 
   if(home_config == 0) {
     file  = fopen("../.config/scriptrunner/apps.txt", "r");
@@ -295,11 +347,12 @@ int package_installer(void) { // app installer
     }
   }
 
-  else {
-    file  = fopen("$HOME/.config/scriptrunner/apps.txt", "r");
+  else if(home_config == 1) {
+    file02  = fopen(expandedPath, "r");
 
-    if(file == NULL) {
+    if(file02 == NULL) {
       (void)printf("Failed to open the file.\n");
+      free(expandedPath);
       return 1;
     }
   }
@@ -308,7 +361,15 @@ int package_installer(void) { // app installer
   char *tmpstr = "";
   char **lineContents = &tmpstr;
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file, &totalLines, &lineContents);
+  int result = '\0';
+
+  if(home_config == 0) {
+    result = readLineFromFile(file, &totalLines, &lineContents);
+  }
+
+  else if(home_config == 1) {
+    result = readLineFromFile(file02, &totalLines, &lineContents);
+  }
 
   if(result != 0) {
     printf("Error reading file.\n");
@@ -373,8 +434,18 @@ int package_installer(void) { // app installer
 
   free(lineContents);
   lineContents = NULL;
+
   // Free the allocated memory for lineContents
-  (void)fclose(file); // Close the file
+  if(home_config == 0) {
+    (void)fclose(file); // Close the file
+  }
+
+  else if((home_config == 1) && (file02 != NULL)) {
+    (void)fclose(file02); // Close the file
+    free(expandedPath);
+  }
+
+  /*(void)printf("package_installer ran successfully!\n");*/
   return 0;
 }
 
