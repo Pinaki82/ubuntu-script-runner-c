@@ -1,4 +1,4 @@
-// Last Change: 2023-06-10  Saturday: 09:28:46 PM
+// Last Change: 2023-06-11  Sunday: 03:09:41 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +13,10 @@
 #define MAX_STRING_LENGTH_4_SPECIAL 100
 #define PIPE_YES  "yes |"
 #define SUDOCOMMAND  "sudo"
-#define strndup  sf_strndup
+
+#define strndup sf_strndup
+#define strncpy sf_strncpy
+#define strncat sf_strncat
 
 int home_config = 0; // global flag to check if the file is in the home (~/.config/scriptrunner) directory. 0 means the file is in the root of the program's folder
 
@@ -76,10 +79,12 @@ void copyStringWithoutPrefix(const char *input, char *output, const char *prefix
   }
 
   // Copy the remaining part of the input to the output string
-  strcpy(output, input);
+  strncpy(output, input, strlen(input));
 }
 
 char *expand_tilde(const char *path) {
+  char *val2ret = NULL;
+
   if(path[0] == '~') {
     const char *homeDir = getenv("HOME");
 
@@ -89,14 +94,16 @@ char *expand_tilde(const char *path) {
       char *expandedPath = malloc(homeDirLen + pathLen);
 
       if(expandedPath) {
-        strcpy(expandedPath, homeDir);
-        strcat(expandedPath, path + 1);
+        strncpy(expandedPath, homeDir, homeDirLen);
+        strncat(expandedPath, path + 1, pathLen - 1);
         return expandedPath;
       }
+
+      val2ret = strndup(path, pathLen);
     }
   }
 
-  return strdup(path);
+  return val2ret;
 }
 
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
@@ -258,8 +265,7 @@ int renewsys(void) {
   int totalLines = 0;
   FILE *file = NULL;
   FILE *file02 = NULL;      /* input-file pointer */
-  char *tmpstr = "";
-  char **lineContentsOfRenew = &tmpstr;
+  char **lineContentsOfRenew = NULL;
   const char *renew_system_in_home_config = "~/.config/scriptrunner/renew_system.txt"; /* input-file name */
   char *expandedPath = expand_tilde(renew_system_in_home_config);
 
@@ -306,13 +312,13 @@ int renewsys(void) {
       continue;
     }
 
-    // else if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
-    else if(lineContentsOfRenew[lineNumber - 1][0] == '\0' || lineContentsOfRenew[lineNumber - 1][0] == '\n' || lineContentsOfRenew[lineNumber - 1][0] == '\t') {
+    // if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
+    if(lineContentsOfRenew[lineNumber - 1][0] == '\0' || lineContentsOfRenew[lineNumber - 1][0] == '\n' || lineContentsOfRenew[lineNumber - 1][0] == '\t') {
       continue;
     }
 
-    // else if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
-    else if(strstr(lineContentsOfRenew[lineNumber - 1], "special: ") != NULL) {
+    // if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
+    if(strstr(lineContentsOfRenew[lineNumber - 1], "special: ") != NULL) {
       /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContentsOfRenew[lineNumber - 1]);*/
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
@@ -324,9 +330,7 @@ int renewsys(void) {
       continue;
     }
 
-    else {
-      (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
-    }
+    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
   }
 
   // Free the allocated memory for lineContents
@@ -382,8 +386,7 @@ int package_installer(void) { // app installer
   }
 
   int totalLines = 0;
-  char *tmpstr = "";
-  char **lineContents = &tmpstr;
+  char **lineContents = NULL;
   // Call the readLineFromFile function to read the contents of the file
   int result = '\0';
 
@@ -408,13 +411,13 @@ int package_installer(void) { // app installer
       continue;
     }
 
-    // else if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
-    else if(lineContents[lineNumber - 1][0] == '\0' || lineContents[lineNumber - 1][0] == '\n' || lineContents[lineNumber - 1][0] == '\t') {
+    // if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
+    if(lineContents[lineNumber - 1][0] == '\0' || lineContents[lineNumber - 1][0] == '\n' || lineContents[lineNumber - 1][0] == '\t') {
       continue;
     }
 
-    // else if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
-    else if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
+    // if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
+    if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
       /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContents[lineNumber - 1]);*/
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
@@ -426,7 +429,7 @@ int package_installer(void) { // app installer
       continue;
     }
 
-    else {
+    {
       char tmpstr2[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char tmpstr3[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char *the_package_manager = tmpstr2; // apt, yum etc.
