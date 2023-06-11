@@ -1,4 +1,4 @@
-// Last Change: 2023-06-11  Sunday: 03:09:41 PM
+// Last Change: 2023-06-11  Sunday: 04:00:51 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,7 +95,7 @@ char *expand_tilde(const char *path) {
 
       if(expandedPath) {
         strncpy(expandedPath, homeDir, homeDirLen);
-        strncat(expandedPath, path + 1, pathLen - 1);
+        strncat(expandedPath, path + 1, pathLen + (homeDirLen + 1));
         return expandedPath;
       }
 
