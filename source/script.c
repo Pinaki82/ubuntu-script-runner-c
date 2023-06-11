@@ -472,6 +472,7 @@ int package_installer(void) { // app installer
   /*(void)printf("package_installer ran successfully!\n");*/
   return 0;
 }
+
 int main() {
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
