@@ -1,5 +1,6 @@
-// Last Change: 2023-06-11  Sunday: 04:00:51 PM
+// Last Change: 2023-06-11  Sunday: 11:08:08 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -484,7 +485,33 @@ int main() {
   char installcommandname[MAXLINELEN] = "";
   install_command(installcommandname);
   printf("install command: %s\n", installcommandname);
-  (void)renewsys();
-  (void)package_installer();
+  // ask the user to choose an option 1. update the system, 2. install the packages, 3. quit
+  int option = 0;
+  (void)printf("Choose an option:\n1. update the system\n2. install the packages\n3. update the system & install the packages\n4. quit\n");
+  sf_scanf("%d", &option, MAX_INPUT);
+
+  switch(option) {
+    case 1:
+      (void)renewsys();
+      break;
+
+    case 2:
+      (void)package_installer();
+      break;
+
+    case 3:
+      (void)renewsys();
+      (void)package_installer();
+      break;
+
+    case 4:
+      return(0);
+      break;
+
+    default:
+      (void)printf("Invalid option.\n");
+      break;
+  }
+
   return 0;
 }
