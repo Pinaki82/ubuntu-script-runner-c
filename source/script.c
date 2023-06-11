@@ -1,9 +1,12 @@
-// Last Change: 2023-06-09  Friday: 11:41:35 PM
+// Last Change: 2023-06-10  Saturday: 09:28:46 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include "sf_c.h"
 
 #define MAXLINELEN 2048
@@ -12,8 +15,11 @@
 #define SUDOCOMMAND  "sudo"
 #define strndup  sf_strndup
 
+int home_config = 0; // global flag to check if the file is in the home (~/.config/scriptrunner) directory. 0 means the file is in the root of the program's folder
+
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
 void copyStringWithoutPrefix(const char *input, char *output, const char *prefix);
+char *expand_tilde(const char *path);
 void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
 int renewsys(void);
@@ -73,30 +79,88 @@ void copyStringWithoutPrefix(const char *input, char *output, const char *prefix
   strcpy(output, input);
 }
 
+char *expand_tilde(const char *path) {
+  if(path[0] == '~') {
+    const char *homeDir = getenv("HOME");
+
+    if(homeDir) {
+      size_t pathLen = strlen(path);
+      size_t homeDirLen = strlen(homeDir);
+      char *expandedPath = malloc(homeDirLen + pathLen);
+
+      if(expandedPath) {
+        strcpy(expandedPath, homeDir);
+        strcat(expandedPath, path + 1);
+        return expandedPath;
+      }
+    }
+  }
+
+  return strdup(path);
+}
+
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
   int totalLines = 0;
   char **lineContents = NULL;
   FILE  *fp;      /* input-file pointer */
-  char  *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */ /* use extension within double quotes */
+  FILE *fp2;      /* input-file pointer */
+  char *fp_package_manager = "../.config/scriptrunner/package_manager.txt";      /* input-file name */
+  const char *filePath = "~/.config/scriptrunner/package_manager.txt";
+  char *expandedPath = expand_tilde(filePath);
+  /*printf("expandedPath to your config dir: %s\n", expandedPath);*/
+  FILE *fp_package_manager_in_home_config = fopen(expandedPath, "r");
+  /*char *fp_package_manager_in_home_config = "$HOME/.config/scriptrunner/package_manager.txt";      /* input-file name */
   fp  = fopen(fp_package_manager, "r");
 
-  if(fp == NULL) {
+  /*if(fp != NULL) {*/
+  /*(void)fprintf(stderr, "\nfn package_manager: fp. opened the file '%s'\n", fp_package_manager);*/
+  /*}*/
+
+  if(fp == NULL) { // try finding the file in the program's root directory (.config/scriptrunner)
     (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", fp_package_manager,  strerror(errno));
-    exit(EXIT_FAILURE);
+    // Check if the file is in the home (~/.config/scriptrunner) directory
+    fp2 = fopen(expandedPath, "r");
+
+    if(fp2 == NULL) { // if not, exit permanently
+      (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", expandedPath,  strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+
+    else { // means, the file is found in the home (~/.config/scriptrunner) directory, since (fp2 == NULL)
+      (void)printf("File opened: %s. HOME dir flag set to ON.\n", expandedPath);
+      home_config = 1; // from now on, consider that the file is in the home (~/.config/scriptrunner) directory // set the global flag on
+    }
   }
 
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(fp, &totalLines, &lineContents);
+  if(home_config == 0) {
+    int result = readLineFromFile(fp, &totalLines, &lineContents);
 
-  if(result != 0) {
-    (void)fprintf(stderr, "\nError reading file. '%s'; %s\n", fp_package_manager,  strerror(errno));
-    (void)fclose(fp);
+    if(result != 0) {
+      (void)fprintf(stderr, "\nError reading file. '%s'; %s\n", fp_package_manager,  strerror(errno));
+      (void)fclose(fp);
+    }
+
+    /* copy the contents of the line no. 0 to the variable package_manager_name
+      and pass it to package_manager_name */
+    if(lineContents[0] != NULL) {
+      strncpy(package_manager_name, *(lineContents + 0), MAXLINELEN);
+    }
   }
 
-  /* copy the contents of the line no. 0 to the variable package_manager_name
-    and pass it to package_manager_name */
-  if(lineContents[0] != NULL) {
-    strncpy(package_manager_name, *(lineContents + 0), MAXLINELEN);
+  else if(home_config == 1) {
+    int result = readLineFromFile(fp2, &totalLines, &lineContents);
+
+    if(result != 0) {
+      (void)fprintf(stderr, "\nError reading file. '%s'; %s\n", expandedPath,  strerror(errno));
+      (void)fclose(fp);
+    }
+
+    /* copy the contents of the line no. 0 to the variable package_manager_name
+      and pass it to package_manager_name */
+    if(lineContents[0] != NULL) {
+      strncpy(package_manager_name, *(lineContents + 0), MAXLINELEN);
+    }
   }
 
   // Free the allocated memory for lineContents
@@ -106,19 +170,39 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
 
   free(lineContents);
   lineContents = NULL;
-  (void)fclose(fp); // Close the file
+
+  if(home_config == 0) {
+    (void)fclose(fp); // Close the file
+  }
+
+  else if(home_config == 1) {
+    (void)fclose(fp2); // Close the file
+  }
 }
 
 void install_command(char *command_2_install_apps) { // install, -S etc.
   int totalLines = 0;
   char **lineContents = NULL;
-  FILE  *file;      /* input-file pointer */
-  char  *file_install_command = "../.config/scriptrunner/installcommand.txt";      /* input-file name */ /* use extension within double quotes */
-  file  = fopen(file_install_command, "r");
+  FILE *file;      /* input-file pointer */
+  char *file_install_command = "../.config/scriptrunner/installcommand.txt";      /* input-file name */
+  char *file_install_command_in_home_config = "$HOME/.config/scriptrunner/installcommand.txt";      /* input-file name */
 
-  if(file == NULL) {
-    (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", file_install_command,  strerror(errno));
-    exit(EXIT_FAILURE);
+  if(home_config == 0) {
+    file  = fopen(file_install_command, "r");
+
+    if(file == NULL) {
+      (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", file_install_command,  strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  else {
+    file  = fopen(file_install_command_in_home_config, "r");
+
+    if(file == NULL) {
+      (void)fprintf(stderr, "\ncouldn't open file '%s'; %s\n", file_install_command_in_home_config,  strerror(errno));
+      exit(EXIT_FAILURE);
+    }
   }
 
   // Call the readLineFromFile function to read the contents of the file
@@ -146,33 +230,45 @@ void install_command(char *command_2_install_apps) { // install, -S etc.
 }
 
 int renewsys(void) {
-  /* part 3 */
-  FILE *file02 = fopen("../.config/scriptrunner/renew_system.txt", "r");
-
-  if(file02 == NULL) {
-    (void)printf("Failed to open the file.\n");
-    return 1;
-  }
-
-  int totalLines2 = 0;
+  int totalLines = 0;
+  FILE *file;
   char *tmpstr = "";
   char **lineContentsOfRenew = &tmpstr;
+
+  if(home_config == 0) { // found in the root dir of the program
+    file = fopen("../.config/scriptrunner/renew_system.txt", "r");
+
+    if(file == NULL) {
+      (void)printf("Failed to open the file.\n");
+      return 1;
+    }
+  }
+
+  else {
+    file = fopen("$HOME/.config/scriptrunner/renew_system.txt", "r");
+
+    if(file == NULL) {
+      (void)printf("Failed to open the file.\n");
+      return 1;
+    }
+  }
+
   // Call the readLineFromFile function to read the contents of the file
-  int result = readLineFromFile(file02, &totalLines2, &lineContentsOfRenew);
+  int result = readLineFromFile(file, &totalLines, &lineContentsOfRenew);
 
   if(result != 0) {
     printf("Error reading file.\n");
-    (void)fclose(file02);
+    (void)fclose(file);
     return 1;
   }
 
   // Print the contents of each line
-  for(int lineNumber = 1; lineNumber <= totalLines2 && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
+  for(int lineNumber = 1; lineNumber <= totalLines && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
     (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
   }
 
   // Free the allocated memory for lineContents
-  for(int i = 0; i < totalLines2; i++) {
+  for(int i = 0; i < totalLines; i++) {
     free(lineContentsOfRenew[i]);
     lineContentsOfRenew[i] = NULL;
   }
@@ -180,7 +276,7 @@ int renewsys(void) {
   free(lineContentsOfRenew);
   lineContentsOfRenew = NULL;
   // Free the allocated memory for lineContents
-  (void)fclose(file02); // Close the file
+  /*(void)fclose(file); // Close the file*/
   return 0;
 }
 
@@ -188,11 +284,24 @@ int package_installer(void) { // app installer
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
   /*(void)printf("manager: %s\n", package_manager_name);*/
-  FILE *file = fopen("../.config/scriptrunner/apps.txt", "r");
+  FILE *file;
 
-  if(file == NULL) {
-    (void)printf("Failed to open the file.\n");
-    return 1;
+  if(home_config == 0) {
+    file  = fopen("../.config/scriptrunner/apps.txt", "r");
+
+    if(file == NULL) {
+      (void)printf("Failed to open the file.\n");
+      return 1;
+    }
+  }
+
+  else {
+    file  = fopen("$HOME/.config/scriptrunner/apps.txt", "r");
+
+    if(file == NULL) {
+      (void)printf("Failed to open the file.\n");
+      return 1;
+    }
   }
 
   int totalLines = 0;
@@ -243,10 +352,10 @@ int package_installer(void) { // app installer
       /*(void)printf("The package manager found in the fn package_manager: %s\n", the_package_manager);*/
       /*(void)printf("The install command found in the fn install_command: %s\n", the_command_2_install_packages);*/
       /* concatenate SUDOCOMMAND, the_package_manager, INSTALLCOMMAND, and the contents of the line */
-      sf_strncat(totalcommandtopass, PIPE_YES, MAXLINELEN);
-      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
-      sf_strncat(totalcommandtopass, SUDOCOMMAND, MAXLINELEN);
-      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, PIPE_YES, MAXLINELEN); // 'yes |'
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN); // ' '
+      sf_strncat(totalcommandtopass, SUDOCOMMAND, MAXLINELEN); // 'sudo'
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN); // ' '
       sf_strncat(totalcommandtopass, the_package_manager, MAXLINELEN);
       sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, the_command_2_install_packages, MAXLINELEN);
@@ -281,4 +390,3 @@ int main() {
   (void)package_installer();
   return 0;
 }
-
