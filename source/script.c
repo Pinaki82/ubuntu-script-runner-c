@@ -298,12 +298,37 @@ int renewsys(void) {
     return 1;
   }
 
-  // Print the contents of each line
-  for(int lineNumber = 1; lineNumber <= totalLines && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
-    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
-  }
+  char **lineContents = NULL;
 
-  (void)printf("\n");
+  // Print the contents of each line
+  for(int lineNumber = 2 /*from 1, cant read ln. 0*/; lineNumber <= totalLines && lineContentsOfRenew[lineNumber - 1] != NULL; lineNumber++) {
+    // if the first char of the line is '#', ignore the line alltogether
+    if(lineContents[lineNumber - 1][0] == '#') {
+      continue;
+    }
+
+    // else if the first char of the line is NULL or '\n', i.e., the line is empty, ignore the line alltogether
+    else if(lineContents[lineNumber - 1][0] == '\0' || lineContents[lineNumber - 1][0] == '\n' || lineContents[lineNumber - 1][0] == '\t') {
+      continue;
+    }
+
+    // else if the the first string in the line is "special: ", remove the string "special: " in memory, and print the remaing contents of the line
+    else if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
+      /*(void)printf("Line: %d, Line contents: %s, Found special.\n", lineNumber, lineContents[lineNumber - 1]);*/
+      char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
+      /*(void)printf("input line is: %s\n", inputLine);*/
+      copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
+      /*(void)printf("input after removing the prefix: %s\n", lineContentsreduced);*/
+      (void)printf("Line %d: %s", lineNumber, lineContentsreduced);
+      continue;
+    }
+
+    else {
+      (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+    }
+  }
 
   // Free the allocated memory for lineContents
   for(int i = 0; i < totalLines; i++) {
@@ -448,7 +473,6 @@ int package_installer(void) { // app installer
   /*(void)printf("package_installer ran successfully!\n");*/
   return 0;
 }
-
 int main() {
   // the 2nd part
   char package_manager_name[MAXLINELEN] = "";
