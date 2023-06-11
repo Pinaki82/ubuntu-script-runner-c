@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <pwd.h>
 #include "sf_c.h"
 
@@ -24,6 +25,7 @@ int home_config = 0; // global flag to check if the file is in the home (~/.conf
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
 void copyStringWithoutPrefix(const char *input, char *output, const char *prefix);
 char *expand_tilde(const char *path);
+int executeCommand(const char *command);
 void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
 int renewsys(void);
@@ -105,6 +107,33 @@ char *expand_tilde(const char *path) {
   }
 
   return val2ret;
+}
+
+int executeCommand(const char *command) {
+  char *cmd[] = {(char *)command, NULL};
+  pid_t pid = fork();
+
+  if(pid == 0) {
+    // This is the child process
+    execvp(command, cmd);
+    perror("execvp failed");
+    return(1);
+  }
+
+  if(pid > 0) {
+    // This is the parent process
+    int status;
+    waitpid(pid, &status, 0);
+    printf("Child process exited with status %d\n", WEXITSTATUS(status));
+    return(WEXITSTATUS(status));
+  }
+
+  // Otherwise,
+  {
+    // fork failed
+    perror("fork failed");
+    return(0);
+  }
 }
 
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
