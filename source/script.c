@@ -1,4 +1,4 @@
-// Last Change: 2023-06-12  Monday: 08:01:10 AM
+// Last Change: 2023-06-12  Monday: 12:16:04 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <linux/limits.h>
 #include <stdio.h>
@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#include <time.h>
 #include "sf_c.h"
 
 #define MAXLINELEN 2048
@@ -125,6 +126,32 @@ int executeCommand(const char *command) {
     int status;
     waitpid(pid, &status, 0);
     printf("Child process exited with status %d\n", WEXITSTATUS(status));
+    // Open the file for appending
+    const char *filePath = "~//scriptrunner.log";
+    char *expandedPath = expand_tilde(filePath);
+    /*printf("expandedPath: %s\n", expandedPath);*/
+    FILE *logfile = fopen(expandedPath, "a");
+    /*FILE *logfile = fopen("../scriptrunner.log", "a");*/
+
+    if(logfile != NULL) {
+      // Get current date and time
+      time_t now = time(NULL);
+      struct tm *tm_info = localtime(&now);
+      char timestamp[20];
+      (void)strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+      // Append the date-time stamp to the file
+      (void)fprintf(logfile, "[%s] Command: %s, Exit Status: %d\n", timestamp, command, WEXITSTATUS(status));
+      // Close the file
+      (void)fclose(logfile);
+      free(expandedPath);
+    }
+
+    else {
+      printf("Failed to open the log file\n");
+      free(expandedPath);
+      return 1; // Error handling
+    }
+
     return WEXITSTATUS(status);
   }
 
