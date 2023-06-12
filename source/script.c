@@ -1,4 +1,4 @@
-// Last Change: 2023-06-11  Sunday: 11:47:40 PM
+// Last Change: 2023-06-12  Monday: 08:01:10 AM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <linux/limits.h>
 #include <stdio.h>
@@ -357,7 +357,7 @@ int renewsys(void) {
       continue;
     }
 
-    (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+    (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
     executeCommand(lineContentsOfRenew[lineNumber - 1]);
   }
 
@@ -453,7 +453,8 @@ int package_installer(void) { // app installer
       /*(void)printf("input line is: %s\n", inputLine);*/
       copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
       /*(void)printf("input after removing the prefix: %s\n", lineContentsreduced);*/
-      (void)printf("Line %d: %s", lineNumber, lineContentsreduced);
+      (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsreduced);
+      executeCommand(lineContentsreduced);
       continue;
     }
 
@@ -477,7 +478,8 @@ int package_installer(void) { // app installer
       sf_strncat(totalcommandtopass, the_command_2_install_packages, MAXLINELEN);
       sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
-      (void)printf("Line %d: %s", lineNumber, totalcommandtopass);
+      (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
+      executeCommand(totalcommandtopass);
     }
   }
 
