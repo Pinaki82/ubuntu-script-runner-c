@@ -1,4 +1,4 @@
-// Last Change: 2023-06-11  Sunday: 11:08:08 PM
+// Last Change: 2023-06-11  Sunday: 11:47:40 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 #include <linux/limits.h>
 #include <stdio.h>
@@ -109,15 +109,15 @@ char *expand_tilde(const char *path) {
   return val2ret;
 }
 
+// Uses: const char *command3 = "yes | sudo apt install gufw"; executeCommand(command3);
 int executeCommand(const char *command) {
-  char *cmd[] = {(char *)command, NULL};
   pid_t pid = fork();
 
   if(pid == 0) {
     // This is the child process
-    execvp(command, cmd);
-    perror("execvp failed");
-    return(1);
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    perror("execl failed");
+    return 1;
   }
 
   if(pid > 0) {
@@ -125,15 +125,12 @@ int executeCommand(const char *command) {
     int status;
     waitpid(pid, &status, 0);
     printf("Child process exited with status %d\n", WEXITSTATUS(status));
-    return(WEXITSTATUS(status));
+    return WEXITSTATUS(status);
   }
 
-  // Otherwise,
-  {
-    // fork failed
-    perror("fork failed");
-    return(0);
-  }
+  // Otherwise, fork failed
+  perror("fork failed");
+  return 0;
 }
 
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
@@ -361,6 +358,7 @@ int renewsys(void) {
     }
 
     (void)printf("Line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+    executeCommand(lineContentsOfRenew[lineNumber - 1]);
   }
 
   // Free the allocated memory for lineContents
