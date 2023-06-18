@@ -1,5 +1,10 @@
-// Last Change: 2023-06-12  Monday: 12:16:04 PM
+// Last Change: 2023-06-13  Tuesday: 01:42:51 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
+// Restrict to Linux systems only
+#if !( defined(__linux__) && defined(_POSIX_VERSION))
+  #error "Sorry, only Linux systems are supported"
+#endif
+
 #include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
