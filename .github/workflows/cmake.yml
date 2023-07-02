@@ -1,0 +1,48 @@
+name: CMake
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        # os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Set up CMake, Build and Test
+      uses: lukka/run-cmake@v2
+      with:
+        token: ${{ secrets.PINAKI_GH_TOKEN }} # Github Access Token Name.
+        cmakeListsTxt: CMakeLists.txt
+        buildDir: build
+        buildType: Release
+
+    - name: Build project
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+        ./installscriptrunner --version
+
+    - name: Test project
+      run: |
+        cd build
+        ctest -C Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: installscriptrunner
+        path: build/installscriptrunner
