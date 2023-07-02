@@ -176,5 +176,5 @@ jobs:
     - name: Deploy docs
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.PINAKI_GH_TOKEN }}
         publish_dir: build/docs/html
