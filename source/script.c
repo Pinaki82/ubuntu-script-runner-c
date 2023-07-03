@@ -1,4 +1,4 @@
-// Last Change: 2023-07-03  Monday: 01:22:32 AM
+// Last Change: 2023-07-03  Monday: 01:11:05 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 // Restrict to Linux systems only
 #if !( defined( __gnu_linux__ ) || defined(_POSIX_VERSION) )
@@ -39,6 +39,7 @@ void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
 int renewsys(void);
 int package_installer(void);
+void instruction(void);
 
 // Function to read from a text file line by line
 // Arguments:
@@ -541,16 +542,48 @@ int package_installer(void) { // app installer
   return 0;
 }
 
+void instruction(void) {
+  printf("Usage:\n");
+  printf("* -h shows the basic help.\n");
+  printf("* -v shows the version number.\n");
+  printf("* -r executes the program.\n");
+  printf("* Please look at the \'.config\' folder for configurations.\n");
+  printf("* In the config files, \'#\' at the beginning of a line is a comment ignored by the program.\n");
+  printf("* Multiline comments can be written as writing \'#\' at the beginning of each lines.\n");
+  printf("* Adding \'special: \' at the beginning of a line will send the entire line for execution, without the characters \'special: \'. So, please be careful while using \'special: \'.");
+  printf(" \'special: \' is needed when specific tasks have to be performed in exact manners.\n");
+  printf("\n");
+  printf("* \'apps.txt\' contains the list of packages you would install.\n");
+  printf("\n");
+  printf("* \'installcommand.txt\' should contain the install command, e.g., install on Debian/Ubuntu/Fedora and -S on Arch.\n");
+  printf("\n");
+  printf("* \'package_manager.txt\' should contain the name of the package manager, e.g., \'apt\' on Debian/Ubuntu, \'dnf\' on Fedora and \'pacman\' on Arch.\n");
+  printf("\n");
+  printf("* \'renew_system.txt\' should contain the update-related commands.\n");
+  printf("\n");
+  printf("* Of them, you'll need to update the apps.txt file regularly whenever you want to add new packages to your system. All other files need to be modified only once.\n");
+  printf("\n");
+  printf("* Do not use double quotes \'\' in the configuration files.\n");
+  printf("\n");
+  printf("* Note that the program doesn't uninstall any package if it is not found in the list of apps aka \'apps.txt\'.\n");
+}
+
 int main(int argc, char *argv[]) { /* The Main function. argc means the number of arguments. argv[0] is the program name. argv[1] is the first argument. argv[2] is the second argument and so on. */
   printf("Hey! \'%s\' here!\n", argv[0]); /* Displays the program's name */
 
   if(argc != NO_OF_ARGS) {  /* Checks if the program was called with the exact number of arguments. If it wasn't, it prints out an error message and returns 1. */
     printf("Please provide %d arguments\n", (NO_OF_ARGS - 1));
+    instruction();
     return 1;
   }
 
-  if(argc == 2 && strcmp(argv[1], "--version") == 0) { /* checks if the program was called with the argument "--version". If it was, it prints out the value of the "VERSION" constant and returns 0. Otherwise, it slides down to the next `if()` block. */
+  if(argc == 2 && strcmp(argv[1], "-v") == 0) { /* checks if the program was called with the argument "-v". If it was, it prints out the value of the "VERSION" constant and returns 0. Otherwise, it slides down to the next `if()` block. */
     printf("%s\n", VERSION);
+    return 0;
+  }
+
+  if(argc == 2 && strcmp(argv[1], "-h") == 0) { /* checks if the program was called with the argument "-h". If it was, the program prints out the help. */
+    instruction();
     return 0;
   }
 
@@ -593,8 +626,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
 
   if((argc == 2 && strcmp(argv[1], "--version") != 0) && (argc == 2 && strcmp(argv[1], "-r") != 0)) {
     printf("Please provide a valid argument\n");
+    printf("Supplied argument: %s\n", argv[1]); /* prints out the first argument passed to the program */
+    instruction();
   }
 
-  printf("Supplied argument: %s\n", argv[1]); /* prints out the first argument passed to the program */
   return 0;
 }

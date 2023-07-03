@@ -1,12 +1,9 @@
 # =================================================================
-# Activate default Ubuntu repositories.
+# Update the Debian system.
 # =================================================================
-special: yes | sudo add-apt-repository universe
-special: yes | sudo add-apt-repository multiverse
-special: yes | sudo add-apt-repository restricted
 special: yes | sudo apt update
 # =================================================================
-# Ubuntu repositories (END).
+# Debian update (END).
 # =================================================================
 
 gufw

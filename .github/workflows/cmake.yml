@@ -34,7 +34,7 @@ jobs:
         cd build
         cmake ..
         cmake --build . --config Release
-        ./installscriptrunner --version
+        ./installscriptrunner -v
 
     - name: Test project
       run: |
