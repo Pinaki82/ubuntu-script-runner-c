@@ -151,7 +151,13 @@ int executeCommand(const char *command) {
 
   if(pid > 0) {
     // This is the parent process
-    int status;
+    if(DRY_RUN) {
+      printf("[DRY RUN] %s\n", command);
+      return 0;
+    }
+
+    int status = system(command);
+    //int status;
     waitpid(pid, &status, 0);
     printf("Child process exited with status %d\n", WEXITSTATUS(status));
     // Open the file for appending
@@ -209,8 +215,10 @@ void log_failed_package(const char *pkg) {
   FILE *fp = fopen(expandedPath, "a");
 
   if(fp) {
-    pkg[strcspn(pkg, "\n")] = 0;
-    fprintf(fp, "%s\n", pkg);
+    char buffer[MAXLINELEN];
+    strncpy(buffer, pkg, MAXLINELEN);
+    buffer[strcspn(buffer, "\n")] = 0;
+    fprintf(fp, "%s\n", buffer);
     fclose(fp);
   }
 
@@ -727,24 +735,6 @@ void instruction(void) {
   printf("* Note that the program doesn't uninstall any package if it is not found in the list of apps aka \'apps.txt\'.\n");
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int main(int argc, char *argv[]) { /* The Main function. argc means the number of arguments. argv[0] is the program name. argv[1] is the first argument. argv[2] is the second argument and so on. */
   printf("Hey! \'%s\' here!\n", argv[0]); /* Displays the program's name */
 
@@ -806,6 +796,15 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
         break;
 
       case 4:
+        DRY_RUN = 1;
+        printf("Dry run mode enabled.\n");
+        log_section("DRY RUN");
+        renewsys();
+        package_downloader();
+        package_installer();
+        break;
+
+      case 5:
         return 0;
 
       default:
@@ -823,5 +822,6 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     DRY_RUN = 1;
   }
 
+  executeCommand("apt-mark showmanual > ~/.config/scriptrunner/apps.txt");
   return 0;
 }
