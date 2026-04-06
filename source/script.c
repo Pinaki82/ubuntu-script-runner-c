@@ -35,6 +35,7 @@ int home_config = 0; // global flag to check if the file is in the home (~/.conf
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
 void copyStringWithoutPrefix(const char *input, char *output, const char *prefix);
 char *expand_tilde(const char *path);
+void trim_newline(char *str);
 int executeCommand(const char *command);
 void log_section(const char *text);
 void package_manager(char *package_manager_name);
@@ -120,6 +121,18 @@ char *expand_tilde(const char *path) {
   strcpy(expanded, homeDir);
   strcat(expanded, path + 1);
   return expanded;
+}
+
+void trim_newline(char *str) {
+  if(str == NULL) {
+    return;
+  }
+
+  size_t len = strlen(str);
+
+  if(len > 0 && str[len - 1] == '\n') {
+    str[len - 1] = '\0';
+  }
 }
 
 // Uses: const char *command3 = "yes | sudo apt install gufw"; executeCommand(command3);
