@@ -482,15 +482,17 @@ void install_command(char *command_2_install_apps) { // install, -S etc.
 }
 
 void simulate_flag(char *flag) {
-  FILE *fp = fopen(".config/scriptrunner/simulate_flag.txt", "r");
+  const char *filePath = "~/.config/scriptrunner/simulate_flag.txt";
+  char *expandedPath = expand_tilde(filePath);
+  FILE *fp = fopen(expandedPath, "r");
 
-  if(fp == NULL) {
-    return;
+  if(fp != NULL) {
+    fgets(flag, MAXLINELEN, fp);
+    trim_newline(flag);
+    fclose(fp);
   }
 
-  fgets(flag, MAXLINELEN, fp);
-  trim_newline(flag);
-  fclose(fp);
+  free(expandedPath);
 }
 
 int renewsys(void) {
@@ -646,6 +648,8 @@ int package_downloader(void) { // package downloader
       continue;
     }
 
+    char simflag[MAXLINELEN] = "";
+
     if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
@@ -668,6 +672,12 @@ int package_downloader(void) { // package downloader
       sf_strncat(totalcommandtopass, the_package_manager, MAXLINELEN);
       sf_strncat(totalcommandtopass, " --download-only install ", MAXLINELEN);
       sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
+
+      if(DRY_RUN && strlen(simflag) > 0) {
+        sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+        sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
+      }
+
       (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
@@ -770,6 +780,12 @@ int package_installer(void) { // app installer
       continue;
     }
 
+    char simflag[MAXLINELEN] = "";
+
+    if(DRY_RUN) {
+      simulate_flag(simflag);
+    }
+
     {
       char tmpstr2[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char tmpstr3[MAX_STRING_LENGTH_4_SPECIAL] = "";
@@ -790,6 +806,12 @@ int package_installer(void) { // app installer
       sf_strncat(totalcommandtopass, the_command_2_install_packages, MAXLINELEN);
       sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
+
+      if(DRY_RUN && strlen(simflag) > 0) {
+        sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+        sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
+      }
+
       (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
@@ -883,7 +905,8 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     printf("1. update the system\n");
     printf("2. update system & download packages\n");
     printf("3. update system, download & install packages\n");
-    printf("4. quit\n");
+    printf("4. toggle dry-run mode\n");
+    printf("5. quit\n");
     sf_scanf("%d", &option, MAX_INPUT);
 
     switch(option) {
