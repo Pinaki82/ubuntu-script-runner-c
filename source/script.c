@@ -1,7 +1,7 @@
 // Last Change: 2025-05-02  Friday: 02:16:07 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 // Restrict to Linux systems only
-// TODO: sudo apt --download-only install <packages> (on Debian and its derivatives) to download the packages without installing them. https://stackoverflow.com/questions/4419268/how-do-i-download-a-package-from-apt-get-without-installing-it
+// NOTE: sudo apt --download-only install <packages> (on Debian and its derivatives) to download the packages without installing them. https://stackoverflow.com/questions/4419268/how-do-i-download-a-package-from-apt-get-without-installing-it
 #if !( defined( __gnu_linux__ ) || defined(_POSIX_VERSION) )
   #error "For UNIX-like Operating Systems Only"
 #endif
@@ -44,6 +44,7 @@ void log_section(const char *text);
 void log_failed_package(const char *pkg);
 void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
+void simulate_flag(char *flag);
 int renewsys(void);
 int package_downloader(void);
 int package_installer(void);
@@ -478,6 +479,18 @@ void install_command(char *command_2_install_apps) { // install, -S etc.
   }
 
   /*(void)printf("install_command ran successfully!\n");*/
+}
+
+void simulate_flag(char *flag) {
+  FILE *fp = fopen(".config/scriptrunner/simulate_flag.txt", "r");
+
+  if(fp == NULL) {
+    return;
+  }
+
+  fgets(flag, MAXLINELEN, fp);
+  trim_newline(flag);
+  fclose(fp);
 }
 
 int renewsys(void) {
