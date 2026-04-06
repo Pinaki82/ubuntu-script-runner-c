@@ -6,8 +6,8 @@ special: yes | sudo apt update
 # Debian update (END).
 # =================================================================
 
-noxstntpkg
-pkgabracadabra
+nonexistingpackage
+packageabracadabra
 gufw
 resolvconf
 clamtk-gnome
