@@ -39,6 +39,7 @@ void copyStringWithoutPrefix(const char *input, char *output, const char *prefix
 char *expand_tilde(const char *path);
 void trim_newline(char *str);
 int executeCommand(const char *command);
+void remove_duplicate_lines_from_apps(void);
 void log_section(const char *text);
 void log_failed_package(const char *pkg);
 void package_manager(char *package_manager_name);
@@ -140,17 +141,27 @@ void trim_newline(char *str) {
 
 // Uses: const char *command3 = "yes | sudo apt install gufw"; executeCommand(command3);
 int executeCommand(const char *command) {
+  int status = 0;
+
   // Dry run mode
   if(DRY_RUN) {
     printf("[DRY RUN] %s\n", command);
-    return 0;
+    status = 0;
   }
 
-  // Execute command
-  int status = system(command);
+  else {
+    status = system(command);
+  }
+
   // Prepare log file
   const char *filePath = "~/.config/scriptrunner/scriptrunner.log";
   char *expandedPath = expand_tilde(filePath);
+
+  if(expandedPath == NULL) {
+    return status;
+  }
+
+  // Ensure directory exists
   system("mkdir -p ~/.config/scriptrunner");
   FILE *logfile = fopen(expandedPath, "a");
 
@@ -159,11 +170,17 @@ int executeCommand(const char *command) {
     struct tm *tm_info = localtime(&now);
     char timestamp[20];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+    int exitStatus = 0;
+
+    if(!DRY_RUN && status != -1) {
+      exitStatus = WEXITSTATUS(status);
+    }
+
     fprintf(logfile,
             "[%s] Command: %s, Exit Status: %d\n",
             timestamp,
             command,
-            WEXITSTATUS(status));
+            exitStatus);
     fclose(logfile);
   }
 
@@ -172,7 +189,76 @@ int executeCommand(const char *command) {
   }
 
   free(expandedPath);
+
+  if(DRY_RUN) {
+    return 0;
+  }
+
+  if(status == -1) {
+    return 1;
+  }
+
   return WEXITSTATUS(status);
+}
+
+void remove_duplicate_lines_from_apps(void) {
+  const char *filePath = "~/.config/scriptrunner/apps.txt";
+  char *expandedPath = expand_tilde(filePath);
+
+  if(expandedPath == NULL) {
+    return;
+  }
+
+  FILE *fp = fopen(expandedPath, "r");
+
+  if(!fp) {
+    free(expandedPath);
+    return;
+  }
+
+  char lines[2000][MAXLINELEN];
+  int count = 0;
+  char buffer[MAXLINELEN];
+
+  // Read all lines
+  while(fgets(buffer, sizeof(buffer), fp)) {
+    trim_newline(buffer);
+
+    if(buffer[0] == '\0') {
+      continue;
+    }
+
+    int duplicate = 0;
+
+    for(int i = 0; i < count; i++) {
+      if(strcmp(lines[i], buffer) == 0) {
+        duplicate = 1;
+        break;
+      }
+    }
+
+    if(!duplicate) {
+      strncpy(lines[count], buffer, MAXLINELEN - 1);
+      lines[count][MAXLINELEN - 1] = '\0';
+      count++;
+    }
+  }
+
+  fclose(fp);
+  // Rewrite file
+  fp = fopen(expandedPath, "w");
+
+  if(!fp) {
+    free(expandedPath);
+    return;
+  }
+
+  for(int i = 0; i < count; i++) {
+    fprintf(fp, "%s\n", lines[i]);
+  }
+
+  fclose(fp);
+  free(expandedPath);
 }
 
 void log_section(const char *text) {
@@ -810,13 +896,16 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
         break;
 
       case 4:
-        DRY_RUN = 1;
-        printf("Dry run mode enabled.\n");
-        log_section("DRY RUN");
-        renewsys();
-        package_downloader();
-        package_installer();
-        DRY_RUN = 0;
+        DRY_RUN = !DRY_RUN;
+
+        if(DRY_RUN) {
+          printf("Dry-run mode ENABLED\n");
+        }
+
+        else {
+          printf("Dry-run mode DISABLED\n");
+        }
+
         break;
 
       case 5:
@@ -837,6 +926,7 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     DRY_RUN = 1;
   }
 
-  executeCommand("apt-mark showmanual > ~/.config/scriptrunner/apps.txt");
+  executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps.txt");
+  remove_duplicate_lines_from_apps();
   return 0;
 }
