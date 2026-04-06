@@ -115,7 +115,7 @@ char *expand_tilde(const char *path) {
 
   size_t homeLen = strlen(homeDir);
   size_t pathLen = strlen(path);
-  char *expanded = malloc(homeLen + pathLen);
+  char *expanded = malloc(homeLen + pathLen + 1); // FIX
 
   if(!expanded) {
     return NULL;
@@ -133,72 +133,46 @@ void trim_newline(char *str) {
 
   size_t len = strlen(str);
 
-  if(len > 0 && str[len - 1] == '\n') {
+  if(len > 0 && (str[len - 1] == '\n' || str[len - 1] == '\r')) {
     str[len - 1] = '\0';
   }
 }
 
 // Uses: const char *command3 = "yes | sudo apt install gufw"; executeCommand(command3);
 int executeCommand(const char *command) {
-  pid_t pid = fork();
-
-  if(pid == 0) {
-    // This is the child process
-    execl("/bin/sh", "sh", "-c", command, NULL);
-    perror("execl failed");
-    return 1;
+  // Dry run mode
+  if(DRY_RUN) {
+    printf("[DRY RUN] %s\n", command);
+    return 0;
   }
 
-  if(pid > 0) {
-    // This is the parent process
-    if(DRY_RUN) {
-      printf("[DRY RUN] %s\n", command);
-      return 0;
-    }
+  // Execute command
+  int status = system(command);
+  // Prepare log file
+  const char *filePath = "~/.config/scriptrunner/scriptrunner.log";
+  char *expandedPath = expand_tilde(filePath);
+  system("mkdir -p ~/.config/scriptrunner");
+  FILE *logfile = fopen(expandedPath, "a");
 
-    int status = system(command);
-    //int status;
-    waitpid(pid, &status, 0);
-    printf("Child process exited with status %d\n", WEXITSTATUS(status));
-    // Open the file for appending
-    const char *filePath = "~/.config/scriptrunner/scriptrunner.log";
-    char *expandedPath = expand_tilde(filePath);
-    /*printf("expandedPath: %s\n", expandedPath);*/
-    (void)system("mkdir -p ~/.config/scriptrunner");
-    printf("Log file path: %s\n", expandedPath);
-    FILE *logfile = fopen(expandedPath, "a");
-    /*FILE *logfile = fopen("../scriptrunner.log", "a");*/
-
-    if(logfile != NULL) {
-      // Get current date and time
-      time_t now = time(NULL);
-      struct tm *tm_info = localtime(&now);
-      char timestamp[20];
-      (void)strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
-      // Append the date-time stamp to the file
-      (void)fprintf(logfile, "[%s] Command: %s, Exit Status: %d\n", timestamp, command, WEXITSTATUS(status));
-      // Close the file
-      (void)fclose(logfile);
-      free(expandedPath);
-    }
-
-    else {
-      printf("Failed to open the log file\n");
-      free(expandedPath);
-      return 1; // Error handling
-    }
-
-    if(DRY_RUN) {
-      printf("[DRY RUN] %s\n", command);
-      return 0;
-    }
-
-    return WEXITSTATUS(status);
+  if(logfile != NULL) {
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char timestamp[20];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+    fprintf(logfile,
+            "[%s] Command: %s, Exit Status: %d\n",
+            timestamp,
+            command,
+            WEXITSTATUS(status));
+    fclose(logfile);
   }
 
-  // Otherwise, fork failed
-  perror("fork failed");
-  return 0;
+  else {
+    printf("Failed to open the log file\n");
+  }
+
+  free(expandedPath);
+  return WEXITSTATUS(status);
 }
 
 void log_section(const char *text) {
@@ -802,6 +776,7 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
         renewsys();
         package_downloader();
         package_installer();
+        DRY_RUN = 0;
         break;
 
       case 5:
