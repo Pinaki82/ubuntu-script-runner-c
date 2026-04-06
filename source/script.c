@@ -176,22 +176,62 @@ int executeCommand(const char *command) {
 }
 
 void log_section(const char *text) {
-  char cmd[MAXLINELEN] = "";
-  sf_strncat(cmd, "echo \"\n\n==== ", MAXLINELEN);
-  sf_strncat(cmd, text, MAXLINELEN);
-  sf_strncat(cmd, " ====\n\n\"", MAXLINELEN);
-  executeCommand(cmd);
+  const char *filePath = "~/.config/scriptrunner/scriptrunner.log";
+  char *expandedPath = expand_tilde(filePath);
+
+  if(expandedPath == NULL) {
+    return;
+  }
+
+  FILE *logfile = fopen(expandedPath, "a");
+
+  if(logfile != NULL) {
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char timestamp[20];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+    fprintf(logfile, "\n\n[%s] ==== %s ====\n\n", timestamp, text);
+    fclose(logfile);
+  }
+
+  free(expandedPath);
 }
 
 void log_failed_package(const char *pkg) {
   const char *filePath = "~/.config/scriptrunner/failed_packages.txt";
   char *expandedPath = expand_tilde(filePath);
-  FILE *fp = fopen(expandedPath, "a");
+
+  if(expandedPath == NULL) {
+    return;
+  }
+
+  char buffer[MAXLINELEN];
+  strncpy(buffer, pkg, MAXLINELEN - 1);
+  buffer[MAXLINELEN - 1] = '\0';
+  buffer[strcspn(buffer, "\n")] = 0;
+  // Check if package already exists
+  FILE *fp = fopen(expandedPath, "r");
 
   if(fp) {
-    char buffer[MAXLINELEN];
-    strncpy(buffer, pkg, MAXLINELEN);
-    buffer[strcspn(buffer, "\n")] = 0;
+    char line[MAXLINELEN];
+
+    while(fgets(line, sizeof(line), fp)) {
+      line[strcspn(line, "\n")] = 0;
+
+      if(strcmp(line, buffer) == 0) {
+        fclose(fp);
+        free(expandedPath);
+        return; // Already logged
+      }
+    }
+
+    fclose(fp);
+  }
+
+  // Append package if not found
+  fp = fopen(expandedPath, "a");
+
+  if(fp) {
     fprintf(fp, "%s\n", buffer);
     fclose(fp);
   }
