@@ -30,6 +30,8 @@
 #define strncpy sf_strncpy
 #define strncat sf_strncat
 
+int DRY_RUN = 0;
+
 int home_config = 0; // global flag to check if the file is in the home (~/.config/scriptrunner) directory. 0 means the file is in the root of the program's folder
 
 int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
@@ -38,6 +40,7 @@ char *expand_tilde(const char *path);
 void trim_newline(char *str);
 int executeCommand(const char *command);
 void log_section(const char *text);
+void log_failed_package(const char *pkg);
 void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
 int renewsys(void);
@@ -179,6 +182,11 @@ int executeCommand(const char *command) {
       return 1; // Error handling
     }
 
+    if(DRY_RUN) {
+      printf("[DRY RUN] %s\n", command);
+      return 0;
+    }
+
     return WEXITSTATUS(status);
   }
 
@@ -193,6 +201,20 @@ void log_section(const char *text) {
   sf_strncat(cmd, text, MAXLINELEN);
   sf_strncat(cmd, " ====\n\n\"", MAXLINELEN);
   executeCommand(cmd);
+}
+
+void log_failed_package(const char *pkg) {
+  const char *filePath = "~/.config/scriptrunner/failed_packages.txt";
+  char *expandedPath = expand_tilde(filePath);
+  FILE *fp = fopen(expandedPath, "a");
+
+  if(fp) {
+    pkg[strcspn(pkg, "\n")] = 0;
+    fprintf(fp, "%s\n", pkg);
+    fclose(fp);
+  }
+
+  free(expandedPath);
 }
 
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
@@ -526,7 +548,11 @@ int package_downloader(void) { // package downloader
       sf_strncat(totalcommandtopass, " --download-only install ", MAXLINELEN);
       sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
       (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
-      executeCommand(totalcommandtopass);
+      int status = executeCommand(totalcommandtopass);
+
+      if(status != 0) {
+        log_failed_package(lineContents[lineNumber - 1]);
+      }
     }
   }
 
@@ -644,7 +670,11 @@ int package_installer(void) { // app installer
       sf_strncat(totalcommandtopass, " ", MAXLINELEN);
       sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
       (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
-      executeCommand(totalcommandtopass);
+      int status = executeCommand(totalcommandtopass);
+
+      if(status != 0) {
+        log_failed_package(lineContents[lineNumber - 1]);
+      }
     }
   }
 
@@ -696,6 +726,24 @@ void instruction(void) {
   printf("\n");
   printf("* Note that the program doesn't uninstall any package if it is not found in the list of apps aka \'apps.txt\'.\n");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char *argv[]) { /* The Main function. argc means the number of arguments. argv[0] is the program name. argv[1] is the first argument. argv[2] is the second argument and so on. */
   printf("Hey! \'%s\' here!\n", argv[0]); /* Displays the program's name */
@@ -769,6 +817,10 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     printf("Please provide a valid argument\n");
     printf("Supplied argument: %s\n", argv[1]); /* prints out the first argument passed to the program */
     instruction();
+  }
+
+  if(argc == 3 && strcmp(argv[2], "--dry-run") == 0) {
+    DRY_RUN = 1;
   }
 
   return 0;
