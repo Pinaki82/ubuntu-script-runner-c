@@ -36,9 +36,11 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents);
 void copyStringWithoutPrefix(const char *input, char *output, const char *prefix);
 char *expand_tilde(const char *path);
 int executeCommand(const char *command);
+void log_section(const char *text);
 void package_manager(char *package_manager_name);
 void install_command(char *command_2_install_apps);
 int renewsys(void);
+int package_downloader(void);
 int package_installer(void);
 void instruction(void);
 
@@ -97,27 +99,27 @@ void copyStringWithoutPrefix(const char *input, char *output, const char *prefix
 }
 
 char *expand_tilde(const char *path) {
-  char *val2ret = NULL;
-
-  if(path[0] == '~') {
-    const char *homeDir = getenv("HOME");
-
-    if(homeDir) {
-      size_t pathLen = strlen(path);
-      size_t homeDirLen = strlen(homeDir);
-      char *expandedPath = malloc(homeDirLen + pathLen);
-
-      if(expandedPath) {
-        strncpy(expandedPath, homeDir, homeDirLen);
-        strncat(expandedPath, path + 1, pathLen + (homeDirLen + 1));
-        return expandedPath;
-      }
-
-      val2ret = strndup(path, pathLen);
-    }
+  if(path[0] != '~') {
+    return strndup(path, strlen(path));
   }
 
-  return val2ret;
+  const char *homeDir = getenv("HOME");
+
+  if(!homeDir) {
+    return NULL;
+  }
+
+  size_t homeLen = strlen(homeDir);
+  size_t pathLen = strlen(path);
+  char *expanded = malloc(homeLen + pathLen);
+
+  if(!expanded) {
+    return NULL;
+  }
+
+  strcpy(expanded, homeDir);
+  strcat(expanded, path + 1);
+  return expanded;
 }
 
 // Uses: const char *command3 = "yes | sudo apt install gufw"; executeCommand(command3);
@@ -137,9 +139,11 @@ int executeCommand(const char *command) {
     waitpid(pid, &status, 0);
     printf("Child process exited with status %d\n", WEXITSTATUS(status));
     // Open the file for appending
-    const char *filePath = "~//scriptrunner.log";
+    const char *filePath = "~/.config/scriptrunner/scriptrunner.log";
     char *expandedPath = expand_tilde(filePath);
     /*printf("expandedPath: %s\n", expandedPath);*/
+    (void)system("mkdir -p ~/.config/scriptrunner");
+    printf("Log file path: %s\n", expandedPath);
     FILE *logfile = fopen(expandedPath, "a");
     /*FILE *logfile = fopen("../scriptrunner.log", "a");*/
 
@@ -168,6 +172,14 @@ int executeCommand(const char *command) {
   // Otherwise, fork failed
   perror("fork failed");
   return 0;
+}
+
+void log_section(const char *text) {
+  char cmd[MAXLINELEN] = "";
+  sf_strncat(cmd, "echo \"\n\n==== ", MAXLINELEN);
+  sf_strncat(cmd, text, MAXLINELEN);
+  sf_strncat(cmd, " ====\n\n\"", MAXLINELEN);
+  executeCommand(cmd);
 }
 
 void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
@@ -422,6 +434,109 @@ int renewsys(void) {
   return 0;
 }
 
+int package_downloader(void) { // package downloader
+  char package_manager_name[MAXLINELEN] = "";
+  package_manager(package_manager_name);
+  FILE *file = NULL;
+  FILE *file02 = NULL;
+  const char *package_installer_in_home_config = "~/.config/scriptrunner/apps.txt";
+  char *expandedPath = expand_tilde(package_installer_in_home_config);
+
+  if(home_config == 0) {
+    file  = fopen("../.config/scriptrunner/apps.txt", "r");
+
+    if(file == NULL) {
+      (void)printf("Failed to open the file.\n");
+      return 1;
+    }
+  }
+
+  else if(home_config == 1) {
+    file02  = fopen(expandedPath, "r");
+
+    if(file02 == NULL) {
+      (void)printf("Failed to open the file.\n");
+      free(expandedPath);
+      return 1;
+    }
+  }
+
+  int totalLines = 0;
+  char **lineContents = NULL;
+  int result = '\0';
+
+  if(home_config == 0) {
+    result = readLineFromFile(file, &totalLines, &lineContents);
+  }
+
+  else if(home_config == 1) {
+    result = readLineFromFile(file02, &totalLines, &lineContents);
+  }
+
+  if(result != 0) {
+    printf("Error reading file.\n");
+    (void)fclose(file);
+    return 1;
+  }
+
+  for(int lineNumber = 1; lineNumber <= totalLines && lineContents[lineNumber - 1] != NULL; lineNumber++) {
+    if(lineContents[lineNumber - 1][0] == '#') {
+      continue;
+    }
+
+    if(lineContents[lineNumber - 1][0] == '\0' ||
+       lineContents[lineNumber - 1][0] == '\n' ||
+       lineContents[lineNumber - 1][0] == '\t') {
+      continue;
+    }
+
+    if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
+      char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
+      copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
+      (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsreduced);
+      executeCommand(lineContentsreduced);
+      continue;
+    }
+
+    {
+      char tmpstr2[MAX_STRING_LENGTH_4_SPECIAL] = "";
+      char totalcommandtopass[MAXLINELEN] = "";
+      char *the_package_manager = tmpstr2;
+      package_manager(the_package_manager);
+      sf_strncat(totalcommandtopass, PIPE_YES, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, SUDOCOMMAND, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, the_package_manager, MAXLINELEN);
+      sf_strncat(totalcommandtopass, " --download-only install ", MAXLINELEN);
+      sf_strncat(totalcommandtopass, lineContents[lineNumber - 1], MAXLINELEN);
+      (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
+      executeCommand(totalcommandtopass);
+    }
+  }
+
+  for(int i = 0; i < totalLines; i++) {
+    free(lineContents[i]);
+    lineContents[i] = NULL;
+  }
+
+  free(lineContents);
+  lineContents = NULL;
+
+  if(home_config == 0) {
+    (void)fclose(file);
+  }
+
+  else if((home_config == 1) && (file02 != NULL)) {
+    (void)fclose(file02);
+    free(expandedPath);
+  }
+
+  return 0;
+}
+
 int package_installer(void) { // app installer
   char package_manager_name[MAXLINELEN] = "";
   package_manager(package_manager_name);
@@ -596,32 +711,44 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     char installcommandname[MAXLINELEN] = "";
     install_command(installcommandname);
     printf("install command: %s\n", installcommandname);
-    // ask the user to choose an option 1. update the system, 2. install the packages, 3. quit
+    executeCommand("echo '====================================='");
+    executeCommand("echo '      SCRIPT RUNNER STARTED         '");
+    executeCommand("echo '====================================='");
     int option = 0;
-    (void)printf("Choose an option:\n1. update the system\n2. install the packages\n3. update the system & install the packages\n4. quit\n");
+    printf("Choose an option:\n");
+    printf("1. update the system\n");
+    printf("2. update system & download packages\n");
+    printf("3. update system, download & install packages\n");
+    printf("4. quit\n");
     sf_scanf("%d", &option, MAX_INPUT);
 
     switch(option) {
       case 1:
-        (void)renewsys();
+        log_section("SYSTEM UPDATE");
+        renewsys();
         break;
 
       case 2:
-        (void)package_installer();
+        log_section("SYSTEM UPDATE");
+        renewsys();
+        log_section("PACKAGE DOWNLOAD");
+        package_downloader();
         break;
 
       case 3:
-        (void)renewsys();
-        (void)package_installer();
+        log_section("SYSTEM UPDATE");
+        renewsys();
+        log_section("PACKAGE DOWNLOAD");
+        package_downloader();
+        log_section("PACKAGE INSTALL");
+        package_installer();
         break;
 
       case 4:
-        return(0);
-        break;
+        return 0;
 
       default:
-        (void)printf("Invalid option.\n");
-        break;
+        printf("Invalid option.\n");
     }
   }
 
