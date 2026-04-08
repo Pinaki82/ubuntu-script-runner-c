@@ -911,46 +911,51 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     printf("5. quit\n");
     sf_scanf("%d", &option, MAX_INPUT);
 
-    switch(option) {
-      case 1:
-        log_section("SYSTEM UPDATE");
-        renewsys();
-        break;
+    // int option;
 
-      case 2:
-        log_section("SYSTEM UPDATE");
-        renewsys();
-        log_section("PACKAGE DOWNLOAD");
-        package_downloader();
-        break;
+    while(1) {
+      printf("\nDry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
+      printf("Choose an option:\n");
+      printf("1. update the system\n");
+      printf("2. update system & download packages\n");
+      printf("3. update system, download & install packages\n");
+      printf("4. toggle dry-run mode\n");
+      printf("5. quit\n");
+      sf_scanf("%d", &option, MAX_INPUT);
 
-      case 3:
-        log_section("SYSTEM UPDATE");
-        renewsys();
-        log_section("PACKAGE DOWNLOAD");
-        package_downloader();
-        log_section("PACKAGE INSTALL");
-        package_installer();
-        break;
+      switch(option) {
+        case 1:
+          log_section("SYSTEM UPDATE");
+          renewsys();
+          break;
 
-      case 4:
-        DRY_RUN = !DRY_RUN;
+        case 2:
+          log_section("SYSTEM UPDATE");
+          renewsys();
+          log_section("PACKAGE DOWNLOAD");
+          package_downloader();
+          break;
 
-        if(DRY_RUN) {
-          printf("Dry-run mode ENABLED\n");
-        }
+        case 3:
+          log_section("SYSTEM UPDATE");
+          renewsys();
+          log_section("PACKAGE DOWNLOAD");
+          package_downloader();
+          log_section("PACKAGE INSTALL");
+          package_installer();
+          break;
 
-        else {
-          printf("Dry-run mode DISABLED\n");
-        }
+        case 4:
+          DRY_RUN = !DRY_RUN;
+          printf("Dry-run mode %s\n", DRY_RUN ? "ENABLED" : "DISABLED");
+          break;
 
-        break;
+        case 5:
+          return 0;
 
-      case 5:
-        return 0;
-
-      default:
-        printf("Invalid option.\n");
+        default:
+          printf("Invalid option.\n");
+      }
     }
   }
 
