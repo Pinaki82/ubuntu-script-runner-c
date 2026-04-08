@@ -901,6 +901,8 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     executeCommand("echo '      SCRIPT RUNNER STARTED         '");
     executeCommand("echo '====================================='");
     int option = 0;
+    printf("\n");
+    printf("Dry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
     printf("Choose an option:\n");
     printf("1. update the system\n");
     printf("2. update system & download packages\n");
