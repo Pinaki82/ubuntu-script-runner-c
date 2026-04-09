@@ -210,6 +210,7 @@ void remove_duplicate_lines(const char *filepath) {
   }
 
   FILE *fp = fopen(expandedPath, "r");
+
   if(!fp) {
     free(expandedPath);
     return;
@@ -236,7 +237,9 @@ void remove_duplicate_lines(const char *filepath) {
     }
 
     if(!duplicate) {
-      if(count >= 2000) break;
+      if(count >= 2000) {
+        break;
+      }
 
       strncpy(lines[count], buffer, MAXLINELEN - 1);
       lines[count][MAXLINELEN - 1] = '\0';
@@ -245,8 +248,8 @@ void remove_duplicate_lines(const char *filepath) {
   }
 
   fclose(fp);
-
   fp = fopen(expandedPath, "w");
+
   if(!fp) {
     free(expandedPath);
     return;
@@ -928,7 +931,6 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           package_downloader();
           printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
           executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
-          remove_duplicate_lines("~/.config/scriptrunner/apps.txt");
           remove_duplicate_lines("~/.config/scriptrunner/apps_found.txt");
           remove_duplicate_lines("~/.config/scriptrunner/failed_packages.txt");
           break;
@@ -942,7 +944,6 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           package_installer();
           printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
           executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
-          remove_duplicate_lines("~/.config/scriptrunner/apps.txt");
           remove_duplicate_lines("~/.config/scriptrunner/apps_found.txt");
           remove_duplicate_lines("~/.config/scriptrunner/failed_packages.txt");
           break;
