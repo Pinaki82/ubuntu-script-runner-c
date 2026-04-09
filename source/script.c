@@ -39,7 +39,7 @@ void copyStringWithoutPrefix(const char *input, char *output, const char *prefix
 char *expand_tilde(const char *path);
 void trim_newline(char *str);
 int executeCommand(const char *command);
-void remove_duplicate_lines_from_apps(void);
+void remove_duplicate_lines(const char *filepath);
 void log_section(const char *text);
 void log_failed_package(const char *pkg);
 void package_manager(char *package_manager_name);
@@ -202,16 +202,14 @@ int executeCommand(const char *command) {
   return WEXITSTATUS(status);
 }
 
-void remove_duplicate_lines_from_apps(void) {
-  const char *filePath = "~/.config/scriptrunner/apps.txt";
-  char *expandedPath = expand_tilde(filePath);
+void remove_duplicate_lines(const char *filepath) {
+  char *expandedPath = expand_tilde(filepath);
 
   if(expandedPath == NULL) {
     return;
   }
 
   FILE *fp = fopen(expandedPath, "r");
-
   if(!fp) {
     free(expandedPath);
     return;
@@ -221,11 +219,10 @@ void remove_duplicate_lines_from_apps(void) {
   int count = 0;
   char buffer[MAXLINELEN];
 
-  // Read all lines
   while(fgets(buffer, sizeof(buffer), fp)) {
     trim_newline(buffer);
 
-    if(buffer[0] == '\0') {
+    if(buffer[0] == '\0' || buffer[0] == '#') {
       continue;
     }
 
@@ -239,6 +236,8 @@ void remove_duplicate_lines_from_apps(void) {
     }
 
     if(!duplicate) {
+      if(count >= 2000) break;
+
       strncpy(lines[count], buffer, MAXLINELEN - 1);
       lines[count][MAXLINELEN - 1] = '\0';
       count++;
@@ -246,9 +245,8 @@ void remove_duplicate_lines_from_apps(void) {
   }
 
   fclose(fp);
-  // Rewrite file
-  fp = fopen(expandedPath, "w");
 
+  fp = fopen(expandedPath, "w");
   if(!fp) {
     free(expandedPath);
     return;
@@ -650,6 +648,10 @@ int package_downloader(void) { // package downloader
 
     char simflag[MAXLINELEN] = "";
 
+    if(DRY_RUN) {
+      simulate_flag(simflag);
+    }
+
     if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
@@ -926,7 +928,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           package_downloader();
           printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
           executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
-          remove_duplicate_lines_from_apps();
+          remove_duplicate_lines("~/.config/scriptrunner/apps.txt");
+          remove_duplicate_lines("~/.config/scriptrunner/apps_found.txt");
+          remove_duplicate_lines("~/.config/scriptrunner/failed_packages.txt");
           break;
 
         case 3:
@@ -938,7 +942,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           package_installer();
           printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
           executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
-          remove_duplicate_lines_from_apps();
+          remove_duplicate_lines("~/.config/scriptrunner/apps.txt");
+          remove_duplicate_lines("~/.config/scriptrunner/apps_found.txt");
+          remove_duplicate_lines("~/.config/scriptrunner/failed_packages.txt");
           break;
 
         case 4:
