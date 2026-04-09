@@ -485,6 +485,11 @@ void install_command(char *command_2_install_apps) { // install, -S etc.
 void simulate_flag(char *flag) {
   const char *filePath = "~/.config/scriptrunner/simulate_flag.txt";
   char *expandedPath = expand_tilde(filePath);
+
+  if(expandedPath == NULL) {
+    return;
+  }
+
   FILE *fp = fopen(expandedPath, "r");
 
   if(fp != NULL) {
