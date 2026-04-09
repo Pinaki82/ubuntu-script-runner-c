@@ -1,4 +1,4 @@
-// Last Change: 2025-05-02  Friday: 02:16:07 PM
+// Last Change: 2026-04-09  Thursday: 02:41:45 PM
 // #!/usr/bin/c -Wall -Wextra -pedantic --std=c99
 // Restrict to Linux systems only
 // NOTE: sudo apt --download-only install <packages> (on Debian and its derivatives) to download the packages without installing them. https://stackoverflow.com/questions/4419268/how-do-i-download-a-package-from-apt-get-without-installing-it
@@ -900,18 +900,8 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     executeCommand("echo '====================================='");
     executeCommand("echo '      SCRIPT RUNNER STARTED         '");
     executeCommand("echo '====================================='");
-    int option = 0;
     printf("\n");
-    printf("Dry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
-    printf("Choose an option:\n");
-    printf("1. update the system\n");
-    printf("2. update system & download packages\n");
-    printf("3. update system, download & install packages\n");
-    printf("4. toggle dry-run mode\n");
-    printf("5. quit\n");
-    sf_scanf("%d", &option, MAX_INPUT);
-
-    // int option;
+    int option = 0;
 
     while(1) {
       printf("\nDry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
@@ -934,6 +924,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           renewsys();
           log_section("PACKAGE DOWNLOAD");
           package_downloader();
+          printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
+          executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
+          remove_duplicate_lines_from_apps();
           break;
 
         case 3:
@@ -943,6 +936,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           package_downloader();
           log_section("PACKAGE INSTALL");
           package_installer();
+          printf("Command to pass: sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt\n");
+          executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps_found.txt");
+          remove_duplicate_lines_from_apps();
           break;
 
         case 4:
@@ -952,6 +948,7 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
 
         case 5:
           return 0;
+          break;
 
         default:
           printf("Invalid option.\n");
@@ -959,17 +956,5 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     }
   }
 
-  if((argc == 2 && strcmp(argv[1], "--version") != 0) && (argc == 2 && strcmp(argv[1], "-r") != 0)) {
-    printf("Please provide a valid argument\n");
-    printf("Supplied argument: %s\n", argv[1]); /* prints out the first argument passed to the program */
-    instruction();
-  }
-
-  if(argc == 3 && strcmp(argv[2], "--dry-run") == 0) {
-    DRY_RUN = 1;
-  }
-
-  executeCommand("sudo apt-mark showmanual > ~/.config/scriptrunner/apps.txt");
-  remove_duplicate_lines_from_apps();
   return 0;
 }
