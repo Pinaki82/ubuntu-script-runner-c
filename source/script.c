@@ -16,6 +16,11 @@
 #include <sys/wait.h>
 #include <pwd.h>
 #include <time.h>
+
+#include <dirent.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "sf_c.h"
 
 #define VERSION "1" /* defines a constant string called "VERSION" with the value 1 */
@@ -49,6 +54,11 @@ int renewsys(void);
 int package_downloader(void);
 int package_installer(void);
 void instruction(void);
+
+void copy_file(const char *src, const char *dest);
+void copy_directory(const char *src, const char *dest);
+void install_config_dir(void);
+void run_backup(void);
 
 // Function to read from a text file line by line
 // Arguments:
