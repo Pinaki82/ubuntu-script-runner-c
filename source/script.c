@@ -86,6 +86,7 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
       return -1;
     }
 
+    trim_newline(buffer);
     (*lineContents)[currentLine] = strndup(buffer, MAXLINELEN);
     currentLine++;
   }
@@ -655,7 +656,6 @@ int package_downloader(void) { // package downloader
     }
 
     trim_newline(lineContents[lineNumber - 1]);
-
     char simflag[MAXLINELEN] = "";
 
     if(DRY_RUN) {
