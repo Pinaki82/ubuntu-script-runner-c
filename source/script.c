@@ -82,7 +82,7 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
 
   // Read the file line by line and store the contents in the line contents array
   while(fgets(buffer, sizeof(buffer), file) != NULL) {
-    if((*lineContents)[currentLine] == NULL) {
+    if(lineContents == NULL) {
       return -1;
     }
 
