@@ -82,7 +82,7 @@ int readLineFromFile(FILE *file, int *totalLines, char ***lineContents) {
 
   // Read the file line by line and store the contents in the line contents array
   while(fgets(buffer, sizeof(buffer), file) != NULL) {
-    if(lineContents == NULL) {
+    if((*lineContents)[currentLine] == NULL) {
       return -1;
     }
 
@@ -909,7 +909,8 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
     int option = 0;
 
     while(1) {
-      printf("\nDry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
+      printf("\n============================\n");
+      printf("Dry-run mode: %s\n", DRY_RUN ? "ON" : "OFF");
       printf("Choose an option:\n");
       printf("1. update the system\n");
       printf("2. update system & download packages\n");
