@@ -654,6 +654,8 @@ int package_downloader(void) { // package downloader
       continue;
     }
 
+    trim_newline(lineContents[lineNumber - 1]);
+
     char simflag[MAXLINELEN] = "";
 
     if(DRY_RUN) {
@@ -688,7 +690,7 @@ int package_downloader(void) { // package downloader
         sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
       }
 
-      (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
+      (void)printf("Command to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
       if(status != 0) {
@@ -822,7 +824,7 @@ int package_installer(void) { // app installer
         sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
       }
 
-      (void)printf("Command to pass from the line %d: %s", lineNumber, totalcommandtopass);
+      (void)printf("Command to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
       if(status != 0) {
