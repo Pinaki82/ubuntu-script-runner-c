@@ -915,7 +915,7 @@ void ensure_directory(const char *path) {
 }
 
 void copy_directory(const char *src, const char *backup_root) {
-  char cmd[PATH_MAX * 2];
+  char cmd[PATH_MAX * 4];
   snprintf(
           cmd,
           sizeof(cmd),
@@ -931,7 +931,7 @@ void copy_directory(const char *src, const char *backup_root) {
 }
 
 void install_config_dir(void) {
-  const char *src = "../.config/scriptrunner";
+  const char *src = "../.config/scriptrunner/";
   const char *dest_raw = "~/.config/scriptrunner";
   char *dest = expand_tilde(dest_raw);
 
@@ -939,17 +939,23 @@ void install_config_dir(void) {
     return;
   }
 
-  printf("Installing config directory...\n");
-  printf("From: %s\nTo: %s\n", src, dest);
+  char cmd[PATH_MAX * 4];
 
-  if(DRY_RUN) {
-    printf("[DRY RUN] Would copy config directory\n");
-    free(dest);
-    return;
+  snprintf(
+      cmd,
+      sizeof(cmd),
+      "mkdir -p \"%s\" && sudo rsync -a \"%s\" \"%s/\"",
+      dest,
+      src,
+      dest
+  );
+
+  printf("Executing: %s\n", cmd);
+
+  if(!DRY_RUN) {
+      system(cmd);
   }
 
-  copy_directory(src, dest);
-  log_section("CONFIG INSTALLED");
   free(dest);
 }
 
@@ -979,6 +985,8 @@ void run_backup(void) {
   char *dest_file = expand_tilde(dest_file_raw);
 
   if(!dirs_file || !dest_file) {
+    free(dirs_file);
+    free(dest_file);
     return;
   }
 
@@ -1021,6 +1029,30 @@ void run_backup(void) {
     free(dirs_file);
     free(dest_file);
     return;
+  }
+
+  const char *home = getenv("HOME");
+
+  if(home) {
+    size_t home_len = strlen(home);
+
+    if(strncmp(expanded_backup_root,
+               home,
+               home_len) == 0 &&
+       (expanded_backup_root[home_len] == '\0' ||
+        expanded_backup_root[home_len] == '/')) {
+      fprintf(
+              stderr,
+              "Refusing backup destination inside HOME: %s\n",
+              expanded_backup_root
+      );
+      fclose(fp_dirs);
+      fclose(fp_dest);
+      free(dirs_file);
+      free(dest_file);
+      free(expanded_backup_root);
+      return;
+    }
   }
 
   char line[MAXLINELEN];
@@ -1081,7 +1113,13 @@ void run_backup(void) {
   free(dirs_file);
   free(dest_file);
   free(expanded_backup_root);
-  log_section("BACKUP COMPLETED");
+  bool backup_attempted = false;
+
+  if(backup_attempted) {
+    log_section("BACKUP COMPLETED");
+  }
+
+  // log_section("BACKUP COMPLETED");
 }
 
 void instruction(void) {
