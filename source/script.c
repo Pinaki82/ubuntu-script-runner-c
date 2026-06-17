@@ -23,7 +23,7 @@
 
 #include "sf_c.h"
 
-#define VERSION "1" /* defines a constant string called "VERSION" with the value 1 */
+#define VERSION "2" /* defines a constant string called "VERSION" with the value 1 */
 #define NO_OF_ARGS 2 /* the exact no. of command-line arguments the program takes */
 
 #define MAXLINELEN 2048
@@ -56,8 +56,9 @@ int package_installer(void);
 void instruction(void);
 
 void copy_file(const char *src, const char *dest);
-void copy_directory(const char *src, const char *dest);
+void copy_directory(const char *src, const char *backup_root);
 void install_config_dir(void);
+void ensure_parent_directory(const char *path);
 void run_backup(void);
 
 // Function to read from a text file line by line
@@ -866,6 +867,223 @@ int package_installer(void) { // app installer
   return 0;
 }
 
+void copy_file(const char *src, const char *dest) {
+  if(DRY_RUN) {
+    printf("[DRY RUN] Copy file: %s -> %s\n", src, dest);
+    return;
+  }
+
+  FILE *fsrc = fopen(src, "rb");
+
+  if(!fsrc) {
+    perror("copy_file: fopen src");
+    return;
+  }
+
+  FILE *fdest = fopen(dest, "wb");
+
+  if(!fdest) {
+    perror("copy_file: fopen dest");
+    fclose(fsrc);
+    return;
+  }
+
+  char buffer[8192];
+  size_t n;
+
+  while((n = fread(buffer, 1, sizeof(buffer), fsrc)) > 0) {
+    fwrite(buffer, 1, n, fdest);
+  }
+
+  fclose(fsrc);
+  fclose(fdest);
+}
+
+void ensure_directory(const char *path) {
+  char tmp[PATH_MAX];
+  sf_strncpy(tmp, path, PATH_MAX);
+
+  for(char *p = tmp + 1; *p; p++) {
+    if(*p == '/') {
+      *p = '\0';
+      mkdir(tmp, 0755);
+      *p = '/';
+    }
+  }
+
+  mkdir(tmp, 0755);
+}
+
+void copy_directory(const char *src, const char *backup_root) {
+  char cmd[PATH_MAX * 2];
+  snprintf(
+          cmd,
+          sizeof(cmd),
+          "sudo rsync -aR \"%s\" \"%s\"",
+          src,
+          backup_root
+  );
+  printf("Executing: %s\n", cmd);
+
+  if(system(cmd) != 0) {
+    fprintf(stderr, "Backup failed: %s\n", src);
+  }
+}
+
+void install_config_dir(void) {
+  const char *src = "../.config/scriptrunner";
+  const char *dest_raw = "~/.config/scriptrunner";
+  char *dest = expand_tilde(dest_raw);
+
+  if(!dest) {
+    return;
+  }
+
+  printf("Installing config directory...\n");
+  printf("From: %s\nTo: %s\n", src, dest);
+
+  if(DRY_RUN) {
+    printf("[DRY RUN] Would copy config directory\n");
+    free(dest);
+    return;
+  }
+
+  copy_directory(src, dest);
+  log_section("CONFIG INSTALLED");
+  free(dest);
+}
+
+void ensure_parent_directory(const char *path) {
+  char tmp[PATH_MAX];
+  sf_strncpy(tmp, path, sizeof(tmp));
+  char *last_slash = strrchr(tmp, '/');
+
+  if(last_slash) {
+    *last_slash = '\0';
+    ensure_directory(tmp);
+  }
+}
+
+void run_backup(void) {
+  if(system("command -v rsync >/dev/null 2>&1") != 0) {
+    fprintf(stderr,
+            "Backup skipped: rsync not found in PATH.\n");
+    return;
+  }
+
+  const char *dirs_file_raw =
+          "~/.config/scriptrunner/backup_dirs.txt";
+  const char *dest_file_raw =
+          "~/.config/scriptrunner/backup_destination.txt";
+  char *dirs_file = expand_tilde(dirs_file_raw);
+  char *dest_file = expand_tilde(dest_file_raw);
+
+  if(!dirs_file || !dest_file) {
+    return;
+  }
+
+  FILE *fp_dirs = fopen(dirs_file, "r");
+  FILE *fp_dest = fopen(dest_file, "r");
+
+  if(!fp_dirs || !fp_dest) {
+    printf("Backup config files missing.\n");
+
+    if(fp_dirs) {
+      fclose(fp_dirs);
+    }
+
+    if(fp_dest) {
+      fclose(fp_dest);
+    }
+
+    free(dirs_file);
+    free(dest_file);
+    return;
+  }
+
+  char backup_root[PATH_MAX];
+
+  if(!fgets(backup_root, sizeof(backup_root), fp_dest)) {
+    fclose(fp_dirs);
+    fclose(fp_dest);
+    free(dirs_file);
+    free(dest_file);
+    return;
+  }
+
+  trim_newline(backup_root);
+  char *expanded_backup_root =
+          expand_tilde(backup_root);
+
+  if(!expanded_backup_root) {
+    fclose(fp_dirs);
+    fclose(fp_dest);
+    free(dirs_file);
+    free(dest_file);
+    return;
+  }
+
+  char line[MAXLINELEN];
+
+  while(fgets(line, sizeof(line), fp_dirs)) {
+    trim_newline(line);
+
+    if(line[0] == '\0' || line[0] == '#') {
+      continue;
+    }
+
+    struct stat st;
+
+    if(stat(line, &st) == -1) {
+      printf("Skipping missing: %s\n", line);
+      continue;
+    }
+
+    printf(
+            "Backing up:\n"
+            "  %s\n"
+            "  -> %s\n",
+            line,
+            expanded_backup_root
+    );
+
+    if(DRY_RUN) {
+      printf(
+              "[DRY RUN] sudo rsync -aR \"%s\" \"%s\"\n",
+              line,
+              expanded_backup_root
+      );
+      continue;
+    }
+
+    char cmd[PATH_MAX * 2];
+    snprintf(
+            cmd,
+            sizeof(cmd),
+            "sudo rsync -aR \"%s\" \"%s\"",
+            line,
+            expanded_backup_root
+    );
+    printf("Executing: %s\n", cmd);
+    int result = system(cmd);
+
+    if(result != 0) {
+      fprintf(
+              stderr,
+              "Backup failed: %s\n",
+              line
+      );
+    }
+  }
+
+  fclose(fp_dirs);
+  fclose(fp_dest);
+  free(dirs_file);
+  free(dest_file);
+  free(expanded_backup_root);
+  log_section("BACKUP COMPLETED");
+}
+
 void instruction(void) {
   printf("Usage:\n");
   printf("* -h shows the basic help.\n");
@@ -888,6 +1106,38 @@ void instruction(void) {
   printf("* Of them, you'll need to update the apps.txt file regularly whenever you want to add new packages to your system. All other files need to be modified only once.\n");
   printf("\n");
   printf("* Do not use double quotes \'\' in the configuration files.\n");
+  printf("\n");
+  printf("Backup Configuration\n");
+  printf("--------------------\n");
+  printf("backup_dirs.txt\n");
+  printf("  Contains one absolute path per line.\n");
+  printf("  Example:\n");
+  printf("    /home/YOURUSERNAME/.config\n");
+  printf("    /home/YOURUSERNAME/.local\n");
+  printf("    /etc/nginx\n");
+  printf("    /var/www\n");
+  printf("\n");
+  printf("backup_destination.txt\n");
+  printf("  Contains a single destination directory.\n");
+  printf("  Example:\n");
+  printf("    /mnt/hdd2/home_backup\n");
+  printf("\n");
+  printf("The backup process preserves full paths using rsync -aR.\n");
+  printf("\n");
+  printf("Example:\n");
+  printf("  Source:\n");
+  printf("    /home/YOURUSERNAME/.config\n");
+  printf("\n");
+  printf("  Destination root:\n");
+  printf("    /mnt/hdd2/home_backup\n");
+  printf("\n");
+  printf("  Result:\n");
+  printf("    /mnt/hdd2/home_backup/home/YOURUSERNAME/.config\n");
+  printf("\n");
+  printf("--------------------\n");
+  printf("\n");
+  printf("Lines beginning with '#' are ignored.\n");
+  printf("\n");
   printf("\n");
   printf("* Note that the program doesn't uninstall any package if it is not found in the list of apps aka \'apps.txt\'.\n");
 }
@@ -933,7 +1183,9 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
       printf("2. update system & download packages\n");
       printf("3. update system, download & install packages\n");
       printf("4. toggle dry-run mode\n");
-      printf("5. quit\n");
+      printf("5. install config directory\n");
+      printf("6. backup home directories\n");
+      printf("7. quit\n");
       sf_scanf("%d", &option, MAX_INPUT);
 
       switch(option) {
@@ -972,6 +1224,14 @@ int main(int argc, char *argv[]) { /* The Main function. argc means the number o
           break;
 
         case 5:
+          install_config_dir();
+          break;
+
+        case 6:
+          run_backup();
+          break;
+
+        case 7:
           return 0;
           break;
 
