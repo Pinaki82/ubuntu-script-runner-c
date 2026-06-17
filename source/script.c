@@ -1129,7 +1129,12 @@ void instruction(void) {
   printf("* -h shows the basic help.\n");
   printf("* -v shows the version number.\n");
   printf("* -r executes the program.\n");
-  printf("* Please look at the \'.config\' folder for configurations.\n");
+  printf("* Git clone the repository or download the program in a zip archive from GitHub.\n");
+  printf("* Updates can be performed by issuing the \'git clone\' command.\n");
+  printf("* Maintain a copy of your modifications in the \'.config\' folder in a separate directory for emergencies.\n");
+  printf("* Extract the \'.config.zip\' and look inside the extracted \'.config\' folder for example configurations.\n");
+  printf("\n");
+  printf("--------------------\n");
   printf("* In the config files, \'#\' at the beginning of a line is a comment ignored by the program.\n");
   printf("* Multiline comments can be written as writing \'#\' at the beginning of each lines.\n");
   printf("* Adding \'special: \' at the beginning of a line will send the entire line for execution, without the characters \'special: \'. So, please be careful while using \'special: \'.");
