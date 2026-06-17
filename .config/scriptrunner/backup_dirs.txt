@@ -1,0 +1,7 @@
+/home/appu/.arduino15
+/home/appu/.arduinoIDE
+/home/appu/.config
+/home/appu/.local
+/home/appu/.vim
+/home/appu/.vimdotcommon
+/home/appu/.vimdotlinux
