@@ -940,20 +940,20 @@ void install_config_dir(void) {
   }
 
   char cmd[PATH_MAX * 4];
-
   snprintf(
-      cmd,
-      sizeof(cmd),
-      "mkdir -p \"%s\" && sudo rsync -a \"%s\" \"%s/\"",
-      dest,
-      src,
-      dest
+          cmd,
+          sizeof(cmd),
+          "mkdir -p \"%s\" && rsync -a \"%s\" \"%s/\"",
+          dest,
+          src,
+          dest
   );
-
   printf("Executing: %s\n", cmd);
+  printf("SRC : %s\n", src);
+  printf("DEST: %s\n", dest);
 
   if(!DRY_RUN) {
-      system(cmd);
+    system(cmd);
   }
 
   free(dest);
@@ -1056,6 +1056,7 @@ void run_backup(void) {
   }
 
   char line[MAXLINELEN];
+  bool backup_attempted = false;
 
   while(fgets(line, sizeof(line), fp_dirs)) {
     trim_newline(line);
@@ -1099,7 +1100,11 @@ void run_backup(void) {
     printf("Executing: %s\n", cmd);
     int result = system(cmd);
 
-    if(result != 0) {
+    if(result == 0) {
+      backup_attempted = true;
+    }
+
+    else {
       fprintf(
               stderr,
               "Backup failed: %s\n",
@@ -1113,13 +1118,10 @@ void run_backup(void) {
   free(dirs_file);
   free(dest_file);
   free(expanded_backup_root);
-  bool backup_attempted = false;
 
   if(backup_attempted) {
     log_section("BACKUP COMPLETED");
   }
-
-  // log_section("BACKUP COMPLETED");
 }
 
 void instruction(void) {
