@@ -1145,9 +1145,11 @@ void instruction(void) {
   printf("\n     Examples:\n");
   printf("      1. special: echo \"export PATH=\"\'\"$PATH:/usr/sbin\"\'\"\" >> ~/.bash_aliases\n");
   printf("      2. special: conda list | grep python\n");
+  printf("      3. special: pipx install flawfinder\n");
   printf("\n     The program will issue the following commands to the system:\n");
   printf("      1. echo \"export PATH=\"\'\"$PATH:/usr/sbin\"\'\"\" >> ~/.bash_aliases\n");
   printf("      2. conda list | grep python\n");
+  printf("      3. pipx install flawfinder\n");
   printf("\n");
   printf("* \'apps.txt\' contains the list of packages you would install.\n");
   printf("\n");

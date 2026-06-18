@@ -1,3 +1,4 @@
+yes | sudo apt update && sudo apt upgrade
 yes | sudo apt update
 yes | sudo apt list --upgradable
 yes | sudo apt upgrade
