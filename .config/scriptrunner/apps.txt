@@ -114,22 +114,24 @@ special: pipx install cmake-init
 # https://github.com/gni/offvsix
 # offvsix: Offline Visual Studio Code Extension Downloader
 special: pipx install offvsix
-yes | sudo apt update && \
-yes | sudo apt list --upgradable && \
-yes | sudo apt upgrade && \
-yes | sudo apt update && \
-yes | sudo apt install -f && \
+special: yes | sudo apt update
+special: yes | sudo apt list --upgradable
+special: yes | sudo apt upgrade
+special: yes | sudo apt update
+special: yes | sudo apt install -f
+special: yes | sudo apt update
 
-yes | sudo apt update && \
-yes | sudo apt install nodejs && \
-yes | sudo apt install jq && \
+# Node.js and jQuery:
+
+nodejs
+jq
 
 # How To Compare Two Directories on Linux:
 # https://www.baeldung.com/linux/compare-two-directories
 # https://askubuntu.com/questions/651166/best-alternative-for-winmerge#661055
 
-yes | sudo apt install meld && \
-yes | sudo apt install diffuse && \
+meld
+diffuse
 # KDiff3 (cumbersome)
 yes | sudo apt install kdiff3-qt && \
 # or flatpak install org.kde.kdiff3
