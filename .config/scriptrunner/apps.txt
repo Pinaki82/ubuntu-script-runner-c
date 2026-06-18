@@ -14,6 +14,7 @@ clamtk-gnome
 chkrootkit
 rkhunter
 firejail
+pipx
 # screen: req. by i2pdbrowser
 
 # Do the following:
@@ -49,11 +50,35 @@ software-properties-common
 hdparm
 # ------------------------------------------------------------------------------
 # Install the most essential core build tool:
-build-essential dkms module-assistant linux-headers-$(uname -r)
-curl git git-lfs gitk git-gui patch make cmake diffutils git-extras git-flow diffstat bash fish
-llvm clang clangd clang-tidy clang-tools lld
+build-essential
+dkms
+module-assistant
+linux-headers-$(uname -r)
+curl
+git
+git-lfs
+gitk
+git-gui
+patch
+make
+cmake
+diffutils
+git-extras
+git-flow
+diffstat
+bash
+fish
+llvm
+clang
+clangd
+clang-tidy
+clang-tools
+lld
 libomp-dev
-wget curl git git-lfs
+wget
+curl
+git
+git-lfs
 python3-pip
 #
 #
@@ -133,7 +158,7 @@ jq
 meld
 diffuse
 # KDiff3 (cumbersome)
-yes | sudo apt install kdiff3-qt && \
+# kdiff3-qt
 # or flatpak install org.kde.kdiff3
 # sudo apt install xxdiff (not easy to use or feature-rich)
 # sudo apt install fldiff (not easy to use or feature-rich)
@@ -141,7 +166,7 @@ yes | sudo apt install kdiff3-qt && \
 # Description: package manager for Node.js
 # (npm: Unmet dependencies)
 
-yes | sudo apt install npm && \
+npm
 
 # Update Node.js with NPM (Node Package Manager)
 # https://phoenixnap.com/kb/update-node-js-version
@@ -155,55 +180,67 @@ yes | sudo apt install npm && \
 # cmdtest black box tests Unix command line tools. Roughly, it is given a
 # script, its input files, and its expected output files. cmdtest runs
 # the script, and checks the output is as expected.
-yes | sudo apt install cmdtest && \
-yes | sudo apt install yarn && \
+cmdtest
+yarn
 
 # ------------------------------------------------------------------------------
 # tool for selecting tasks
-yes | sudo apt install tasksel && \
+tasksel
 # ------------------------------------------------------------------------------
 # Network Time Protocol daemon/utilities
-yes | sudo apt install ntp && \
-yes | sudo apt install chrony && \
-yes | sudo systemctl start chronyd && \
-yes | sudo systemctl enable chronyd && \
-yes | sudo chronyc makestep && \
+ntp
+chrony
+special: yes | sudo systemctl start chronyd
+special: yes | sudo systemctl enable chronyd
+special: yes | sudo chronyc makestep
 # ------------------------------------------------------------------------------
 # Install PiP:
-yes | sudo apt install python3-pip && \
+python3-pip
 #python -m pip install --upgrade pip && \
 # ------------------------------------------------------------------------------
+
+# Flatpak:
+# *** Install Flatpak as root: ***
+# sudo su root
+flatpak
+gnome-software-plugin-flatpak
+special: yes | flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+# Exit su:
+# exit
+# sudo reboot now
+# Update Flatpak Apps:
+special: flatpak update
+
 # Debian-XFCE Net-Install ISO didn't install any calculator app.
 # yes | sudo apt install gnome-calculator && \ (Feb. 21, 2025: 'gnome-calculator' is crashing.)
 # Install Qalculate
 # https://www.linuxlinks.com/calculators/
 # https://qalculate.github.io/index.html
-sh -c 'flatpak --assumeyes install flathub io.github.Qalculate' && \
+special: sh -c 'flatpak --assumeyes install flathub io.github.Qalculate'
 #
 # Install GVim+Vim:
-# yes | sudo apt install vim vim-gtk3 && \
-#
-yes | sudo apt install vim && \
+vim
+vim-gtk3
 # ------------------------------------------------------------------------------
 # tldr
 # https://github.com/tldr-pages/tldr.git
-pipx install tldr
+special: pipx install tldr
 # ------------------------------------------------------------------------------
 # The Fish Shell:
 # OH-MY-FISH:
-curl -L https://get.oh-my.fish | fish && \
+special: curl -L https://get.oh-my.fish | fish
 # ------------------------------------------------------------------------------
 # BASH utilities:
-yes | sudo apt install bash-completion && \
-yes | sudo apt install autojump && \
-yes | sudo apt install fzf && \
+bash-completion
+autojump
+fzf
 # ------------------------------------------------------------------------------
 # OH-MY-BASH:
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+special: bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 # ------------------------------------------------------------------------------
 # Bash Language Server
 # https://github.com/bash-lsp/bash-language-server.git
-yes | sudo npm i -g bash-language-server && \
+special: yes | sudo npm i -g bash-language-server
 # bash-language-server --help
 # ------------------------------------------------------------------------------
 # Fish-shell-like autocompletion in Bash-shell
@@ -215,45 +252,48 @@ yes | sudo npm i -g bash-language-server && \
 # akinomyoga/ble.sh
 # requirement: trash-cli
 
-yes | sudo apt install trash-cli && \
+trash-cli
 
-git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git && \
-make -C ble.sh install PREFIX=~/.local && \
-echo 'source ~/.local/share/blesh/ble.sh' >> ~/.bashrc && \
-source ~/.bashrc && \
-source ~/.bash_aliases && \
-trash ble.sh && \
+special: git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git
+special: make -C ble.sh install PREFIX=~/.local
+special: echo 'source ~/.local/share/blesh/ble.sh' >> ~/.bashrc
+special: source ~/.bashrc
+special: source ~/.bash_aliases
+special: trash ble.sh
 # ------------------------------------------------------------------------------
 # AppImage support:
-yes | sudo apt install libfuse2 && \
+libfuse2
 # ------------------------------------------------------------------------------
 # Sensor backend:
-yes | sudo apt install psensor && \
+psensor
 # ------------------------------------------------------------------------------
 # Command-line system info tool # Hardware info from the console
-yes | sudo apt install hardinfo && \
+hardinfo
 # New hardware (firmware)
 # sudo update-initramfs -u
-yes | sudo apt-get install apt-file && \
-yes | sudo apt-file update && \
+special: yes | sudo apt-get install apt-file
+special: yes | sudo apt-file update
 # Hardware changes
 # dmesg | grep firmware
 # apt-file search <firmware-file-name>
 #
 # Power management utility for laptops.
-yes | sudo apt install tlp && \
-yes | sudo apt install tlp-rdw && \
+tlp
+tlp-rdw
 
 # Set Up Bluetooth
 # https://www.howtogeek.com/829360/how-to-set-up-bluetooth-on-linux/
-yes | sudo apt install bluetooth bluemon bluez blueman && \
-sudo systemctl enable bluetooth.service && \
-sudo systemctl start bluetooth.service && \
-rfkill unblock bluetooth && \
+bluetooth
+bluemon
+bluez
+blueman
+special: sudo systemctl enable bluetooth.service
+special: sudo systemctl start bluetooth.service
+special: rfkill unblock bluetooth
 
 # HDMI Display support:
-yes | sudo apt install autorandr && \
-yes | sudo apt install arandr && \
+autorandr
+arandr
 
 # File Compression:
 yes | sudo apt install unzip && \
