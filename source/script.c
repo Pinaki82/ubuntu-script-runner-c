@@ -582,7 +582,7 @@ int renewsys(void) {
       continue;
     }
 
-    (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsOfRenew[lineNumber - 1]);
+    (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, lineContentsOfRenew[lineNumber - 1]);
     executeCommand(lineContentsOfRenew[lineNumber - 1]);
   }
 
@@ -678,7 +678,7 @@ int package_downloader(void) { // package downloader
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
       sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
       copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
-      (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsreduced);
+      (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, lineContentsreduced);
       executeCommand(lineContentsreduced);
       continue;
     }
@@ -701,7 +701,7 @@ int package_downloader(void) { // package downloader
         sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
       }
 
-      (void)printf("Command to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
+      (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
       if(status != 0) {
@@ -798,7 +798,7 @@ int package_installer(void) { // app installer
       /*(void)printf("input line is: %s\n", inputLine);*/
       copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
       /*(void)printf("input after removing the prefix: %s\n", lineContentsreduced);*/
-      (void)printf("Command to pass from the line %d: %s", lineNumber, lineContentsreduced);
+      (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, lineContentsreduced);
       executeCommand(lineContentsreduced);
       continue;
     }
@@ -835,7 +835,7 @@ int package_installer(void) { // app installer
         sf_strncat(totalcommandtopass, simflag, MAXLINELEN);
       }
 
-      (void)printf("Command to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
+      (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, totalcommandtopass);
       int status = executeCommand(totalcommandtopass);
 
       if(status != 0) {
@@ -1142,6 +1142,12 @@ void instruction(void) {
   printf("* Multiline comments can be written as writing \'#\' at the beginning\n    of each lines.\n");
   printf("* Adding \'special: \' at the beginning\n  of a line will send the entire line\n    for execution, without the characters \'special: \'.\n    So, please be careful while using \'special: \'.\n");
   printf("  \'special: \' is needed when specific tasks have to be performed\n    in exact manners.\n");
+  printf("\n     Examples:\n");
+  printf("      1. special: echo \"export PATH=\"\'\"$PATH:/usr/sbin\"\'\"\" >> ~/.bash_aliases\n");
+  printf("      2. special: conda list | grep python\n");
+  printf("\n     The program will issue the following commands to the system:\n");
+  printf("      1. echo \"export PATH=\"\'\"$PATH:/usr/sbin\"\'\"\" >> ~/.bash_aliases\n");
+  printf("      2. conda list | grep python\n");
   printf("\n");
   printf("* \'apps.txt\' contains the list of packages you would install.\n");
   printf("\n");

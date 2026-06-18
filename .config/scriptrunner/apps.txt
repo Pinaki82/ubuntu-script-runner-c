@@ -15,3 +15,11 @@ chkrootkit
 rkhunter
 firejail
 # screen: req. by i2pdbrowser
+
+special: echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bash_profile
+special: echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bashrc
+special: echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bash_aliases
+special: echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.profile
+
+special: conda list | grep nvidia
+special: conda list | grep python
