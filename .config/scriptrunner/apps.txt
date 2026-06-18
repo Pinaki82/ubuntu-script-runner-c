@@ -675,10 +675,10 @@ brasero
 # Screenshot Utility.
 flameshot
 # Defrag NTFS Volumes.
-yes | sudo apt install ntfs-3g && \
+ntfs-3g
 # Terminal Emulator
-yes | sudo apt install kitty && \
-yes | sudo apt install sakura && \
+kitty
+sakura
 # The Suckless ST Terminal Emulator basic package:
 # yes | sudo apt install stterm && \
 # Build it from the source
@@ -686,10 +686,10 @@ yes | sudo apt install sakura && \
 #
 # Ghostty Terminal Emulator
 # https://github.com/clayrisser/debian-ghostty
-echo 'deb http://download.opensuse.org/repositories/home:/clayrisser:/bookworm/Debian_12/ /' | sudo tee /etc/apt/sources.list.d/home:clayrisser:bookworm.list && \
-curl -fsSL https://download.opensuse.org/repositories/home:clayrisser:bookworm/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_clayrisser_bookworm.gpg > /dev/null && \
-sudo apt update && \
-sudo apt install ghostty && \
+# echo 'deb http://download.opensuse.org/repositories/home:/clayrisser:/bookworm/Debian_12/ /' | sudo tee /etc/apt/sources.list.d/home:clayrisser:bookworm.list && \
+# curl -fsSL https://download.opensuse.org/repositories/home:clayrisser:bookworm/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_clayrisser_bookworm.gpg > /dev/null && \
+# sudo apt update && \
+# sudo apt install ghostty && \
 # Thunar File Manager Custom Actions:
 # Name: Ghostty
 # Description: Ghostty Terminal in this Directory Tree
@@ -699,45 +699,45 @@ sudo apt install ghostty && \
 # Range (min-max): <blank>
 # Appear if: Directories
 #
-yes | sudo apt install tree && \
+tree
 # Midnight commander command-line file manager
 # sudo apt install mc && \
 # KDE Advanced Text Editor (supports LSP)
-yes | sudo apt install kate && \
+kate
 #
 #
 # Weather Forecast:
-yes | sudo apt install gnome-weather && \
+gnome-weather
 # ------------------------------------------------------------------------------
 # Developer Utilities:
-yes | sudo apt install cdecl && \
-yes | sudo apt install cutils && \
-yes | sudo apt install cppcheck && \
-yes | sudo apt install cppcheck-gui && \
-yes | sudo apt install splint && \
-#yes | sudo apt install cmake-gui && \
-yes | sudo apt install cmake && \
+cdecl
+cutils
+cppcheck
+cppcheck-gui
+splint
+# yes | sudo apt install cmake-gui && \
+cmake
 # Debuggers, code profilers, memory leak testers, build tools,
 # code formatting applications and more
-yes | sudo apt install ddd && \
-yes | sudo apt install valgrind && \
-yes | sudo apt install cgdb && \
-yes | sudo apt install astyle && \
-yes | sudo apt install universal-ctags && \
-yes | sudo apt install autoconf && \
-yes | sudo apt install pkg-config && \
-yes | sudo apt install libx11-dev && \
-yes | sudo apt install libglib2.0-doc && \
-yes | sudo apt install libtool && \
-yes | sudo apt install autoproject && \
-yes | sudo apt install autogen && \
-yes | sudo apt install autotools-dev && \
-yes | sudo apt install automake && \
-yes | sudo apt install m4 && \
-yes | sudo apt install make && \
-yes | sudo apt install bear && \
-yes | sudo apt install ninja-build && \
-yes | sudo apt install meld && \
+ddd
+valgrind
+cgdb
+astyle
+universal-ctags
+autoconf
+pkg-config
+libx11-dev
+libglib2.0-doc
+libtool
+autoproject
+autogen
+autotools-dev
+automake
+m4
+make
+bear
+ninja-build
+meld
 
 # Terminal Fonts (MUST):
 # * Without these fonts, you'll miss the proper console characters and see boxes everywhere.
