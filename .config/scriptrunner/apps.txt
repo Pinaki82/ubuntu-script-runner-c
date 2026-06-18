@@ -15,6 +15,7 @@ chkrootkit
 rkhunter
 firejail
 pipx
+fish
 # screen: req. by i2pdbrowser
 
 # Do the following:
@@ -201,6 +202,7 @@ python3-pip
 
 # Flatpak:
 # *** Install Flatpak as root: ***
+# Run 'flatpak_install_as_root.sh' if needed
 # sudo su root
 flatpak
 gnome-software-plugin-flatpak
@@ -296,25 +298,29 @@ autorandr
 arandr
 
 # File Compression:
-yes | sudo apt install unzip && \
-yes | sudo apt install bzip2 && \
-yes | sudo apt install tar && \
-yes | sudo apt install xz-utils && \
-yes | sudo apt install lrzip && \
-yes | sudo apt install unrar && \
+unzip
+sudo apt install bzip2
+tar
+xz-utils
+lrzip
+unrar
 # MATE archive manager. Works in XFCE
-yes | sudo apt install engrampa engrampa-common && \
+engrampa
+engrampa-common
 # Generic archive manager. Works in XFCE
-yes | sudo apt install xarchiver && \
-yes | sudo apt install thunar-archive-plugin && \
-yes | sudo apt install pixz && \
-yes | sudo apt install thunar-gtkhash thunar-font-manager thunar-archive-plugin && \
+xarchiver
+thunar-archive-plugin
+pixz
+thunar-gtkhash
+thunar-font-manager
+thunar-archive-plugin
 # https://docs.xfce.org/xfce/thunar/thunar-vcs-plugin
-yes | sudo apt install thunar-vcs-plugin && \
+thunar-vcs-plugin
 #
 # Display dialog boxes
-yes | sudo apt install zenity && \
-yes | sudo apt install ffmpeg zenity bc && \
+ffmpeg
+zenity
+bc
 # Zenity: The GNOME port of the venerable 'dialog' program, which allows you to display dialog boxes from the command-line and shell scripts.
 #
 # ------------------------------------------------------------------------------
@@ -322,76 +328,76 @@ yes | sudo apt install ffmpeg zenity bc && \
 # Wmctrl is a Command line tool to interact with an
 #   EWMH/NetWM compatible X Window Manager (examples include
 #   Enlightenment, icewm, kwin, metacity, and sawfish).
-yes | sudo apt install wmctrl && \
+wmctrl
 # Name Service Cache Daemon
-yes | sudo apt install nscd && \
+nscd
 # Clipboard from the standard input/output
-yes | sudo apt install xclip && \
+xclip
 # simple, lightweight and easy-to-use
 #  download manager.
-yes | sudo apt install uget && \
+uget
 # High speed download utility
-yes | sudo apt install aria2 && \
+aria2
 # Load programs faster
-yes | sudo apt install preload && \
+preload
 # tool for selecting tasks
-yes | sudo apt install tasksel && \
+tasksel
 # Disk Utility
-yes | sudo apt install gparted && \
-yes | sudo apt install gnome-disk-utility && \
+gparted
+gnome-disk-utility
 # Volume/Drive/Container Encryption
 #    https://www.cyberciti.biz/security/howto-linux-hard-disk-encryption-with-luks-cryptsetup-command/
 #    http://security.stackexchange.com/questions/4590/ddg#4592
-yes | sudo apt install gnome-disk-utility && \
-yes | sudo apt install zulucrypt-gui zulucrypt-cli zulumount-gui libzulucrypt-plugins && \
-yes | sudo apt install pmount && \
-yes | sudo apt install luckyluks && \
-yes | sudo apt install cryptsetup cryptmount cryptsetup-bin cryptsetup-initramfs cryptsetup-nuke-password && \
+gnome-disk-utility
+zulucrypt-gui
+zulucrypt-cli
+zulumount-gui
+libzulucrypt-plugins
+pmount
+luckyluks
+cryptsetup
+cryptmount
+cryptsetup-bin
+cryptsetup-initramfs
+cryptsetup-nuke-password
 # Run apps in sandbox
-yes | sudo apt install firejail && \
+firejail
 # ------------------------------------------------------------------------------
 # Internet & Network:
 # Network Time Protocol daemon/utilities
-yes | sudo apt install ntp && \
-yes | sudo apt install wavemon && \
+ntp
+wavemon
 # Monitor status of an 802.11 wireless ethernet link.
-yes | sudo apt install wmwave && \
+wmwave
 # Description: WiFi Share and Connect with QR.
-yes | sudo apt install wifi-qr && \
+wifi-qr
 # Description: graphical wireless scanner.
-yes | sudo apt install linssid && \
+linssid
 # ------------------------------------------------------------------------------
 # USB file transfer from Android phones
-yes | sudo apt install gmtp jmtpfs && \
+gmtp
+jmtpfs
 # ------------------------------------------------------------------------------
 # Launcher.
-yes | sudo apt install rofi && \
+rofi
 # ------------------------------------------------------------------------------
 # Codecs:
 # https://www.sys-hint.com/1075-Installing-Multimedia-Codecs-on-Debian-10
-yes | sudo apt install software-properties-common && \
-yes | sudo apt-add-repository non-free && \
-yes | sudo apt-add-repository contrib && \
+software-properties-common
+# https://phoenixnap.com/kb/add-apt-repository-command-not-found-ubuntu
+special: yes | sudo apt-add-repository non-free
+special: yes | sudo apt-add-repository contrib
 # https://serverfault.com/questions/240920/how-do-i-enable-non-free-packages-on-debian
-yes | sudo apt-add-repository --component non-free && \
-yes | sudo apt install firmware-linux-nonfree && \
-yes | sudo apt update && sudo apt upgrade && \
-yes | sudo apt install libavcodec-extra && \
-yes | sudo apt install libdvdcss2 && \
+special: yes | sudo apt-add-repository --component non-free
+firmware-linux-nonfree
+special: yes | sudo apt update && sudo apt upgrade
+libavcodec-extra
+libdvdcss2
 # Run
-sudo dpkg-reconfigure libdvd-pkg && \
+special: sudo dpkg-reconfigure libdvd-pkg
 #   later.
 #
 # ----------------------------------------------------------------------
-# Codecs:
-# https://www.sys-hint.com/1075-Installing-Multimedia-Codecs-on-Debian-10
-# https://phoenixnap.com/kb/add-apt-repository-command-not-found-ubuntu
-
-yes | sudo apt install software-properties-common && \
-yes | sudo apt-add-repository non-free && \
-yes | sudo apt-add-repository contrib && \
-# https://serverfault.com/questions/240920/how-do-i-enable-non-free-packages-on-debian
-yes | sudo apt-add-repository --component non-free && \
 
 # Edit /etc/apt/sources.list with sudo privileges
 # sudo nano /etc/apt/sources.list
@@ -408,21 +414,26 @@ yes | sudo apt-add-repository --component non-free && \
 ## deb-src http://deb.debian.org/debian/ bookworm-updates non-free main contrib non-free-firmware
 # ---
 
-yes | sudo apt update && sudo apt upgrade && \
-yes | sudo apt install firmware-linux-nonfree && \
+special: yes | sudo apt update && sudo apt upgrade
+firmware-linux-nonfree
 
 
 # Intel CPU support:
-yes | sudo apt install software-properties-common apt-transport-https ca-certificates curl -y && \
-yes | sudo apt install i965-va-driver-shaders && \
-yes | sudo apt install intel-media-va-driver-non-free && \
-yes | sudo apt install xserver-xorg-video-intel && \
-yes | sudo apt install mesa-utils && \
-yes | sudo apt install intel-opencl-icd intel-media-va-driver-non-free libmfx1 && \
-yes | sudo apt install vainfo intel-media-va-driver-non-free libva-drm2 libva-x11-2 && \
-yes | sudo apt install libmfx1 intel-media-va-driver-non-free && \
-yes | sudo apt install i965-va-driver && \
+software-properties-common
+apt-transport-https
+ca-certificates
+curl
+# yes | sudo apt install i965-va-driver-shaders && \
+# yes | sudo apt install intel-media-va-driver-non-free
+xserver-xorg-video-intel
+mesa-utils
+intel-opencl-icd
+libmfx1
+vainfo
+libva-drm2
+libva-x11-2
 # To use Debian Bookworm with 4th-gen (Haswell Bridge/LGA1150) Intel CPUs: sudo apt purge --auto-remove intel-media-va-driver*
+special: sudo apt purge --auto-remove intel-media-va-driver*
 #
 # ==============================================================================
 # Edit the GRUB Bootloader Menu after installing drivers from Intel:
@@ -460,59 +471,71 @@ yes | sudo apt install i965-va-driver && \
 #
 # MS Core Fonts:
 # https://www.linuxcapable.com/how-to-install-microsoft-fonts-on-debian-linux/
-yes | sudo apt update && sudo apt upgrade && \
-yes | sudo apt-add-repository contrib non-free && \
-yes | sudo apt install ttf-mscorefonts-installer && \
+special: yes | sudo apt update && sudo apt upgrade
+special: yes | sudo apt-add-repository contrib non-free
+ttf-mscorefonts-installer
 # https://averagelinuxuser.com/microsoft-fonts-linux/#:~:text=Calibri%20and%20Cambria%20fonts,-Unfortunately%2C%20this%20package&text=These%20Google%20fonts%20are%20metric,package%20manager%20and%20install%20them
-yes | sudo apt install fonts-crosextra-carlito fonts-crosextra-caladea && \
-sudo fc-cache && \
+fonts-crosextra-carlito
+fonts-crosextra-caladea
+special: sudo fc-cache
 #
-yes | sudo apt install fonts-texgyre fonts-texgyre-math fonts-urw-base35 && \
-yes | sudo apt install fonts-apropal fonts-beteckna fonts-breip fonts-cabin && \
-yes | sudo apt install fonts-liberation fonts-liberation2 fonts-lindenhill fonts-oxygen && \
-yes | sudo apt install fonts-play fonts-ubuntu fonts-ubuntu-console fonts-tiresias && \
-yes | sudo apt install texlive-fonts-extra && \
-yes | sudo apt install fonts-croscore && \
-sudo fc-cache && \
+fonts-texgyre
+fonts-texgyre-math
+fonts-urw-base35
+fonts-apropal
+fonts-beteckna
+fonts-breip
+fonts-cabin
+fonts-liberation
+fonts-liberation2
+fonts-lindenhill
+fonts-oxygen
+fonts-play
+fonts-ubuntu
+fonts-ubuntu-console
+fonts-tiresias
+texlive-fonts-extra
+fonts-croscore
+special: sudo fc-cache
 #
-yes | sudo apt install fonts-courier-prime && \
-sudo fc-cache && \
+fonts-courier-prime
+special: sudo fc-cache
 #
 # https://fontlibrary.org/en/font/gnutypewriter
 # https://bneijt.nl/pr/ubuntu-fonts/fonts-gnutypewriter
-yes | sudo apt install "fonts-gnutypewriter" && \
-sudo fc-cache && \
+special: yes | sudo apt install "fonts-gnutypewriter"
+special: sudo fc-cache
 #
 # Charmap
-yes | sudo apt install charmap.app && \
+charmap.app
 #
 # Themes and Icons:
 # Search the web version of the Debian repository for the package.
 # search the apt repo from the command line.
 # Grey Bird:
 # apt search greybird-gtk-theme
-yes | sudo apt install greybird-gtk-theme && \
+greybird-gtk-theme
 # XFCE Calendar
-yes | sudo apt install orage && \
+orage
 # Papyrus:
 # apt search papirus-icon-theme
-yes | sudo apt install papirus-icon-theme && \
+papirus-icon-theme
 # Numix:
-yes | sudo apt install numix-* && \
+special: yes | sudo apt install numix-*
 # Paper:
-yes | sudo apt install paper-icon-theme && \
+paper-icon-theme
 # Obsidian:
-yes | sudo apt install obsidian-icon-theme && \
+obsidian-icon-theme
 # PRO-dark-XFCE-4.14
 # https://www.xfce-look.org/p/1207818/
 # Extract to: /usr/share/themes
 # sudo thunar /usr/share/themes
 # sudo chmod -R 755 /usr/share/themes
 # arc-them
-yes | sudo apt install arc-theme && \
-yes | sudo apt install neofetch && \
-yes | sudo apt install htop && \
-yes | sudo apt install rofi && \
+arc-theme
+neofetch
+htop
+rofi
 # Settings -> Keyboard -> Application Shortcut -> Add
 # rofi -combi-modi window,drun,ssh -theme solarized -font "hack 10" -show combi -icon -theme "papyrus" -show-icons
 # SUPER (WINDOWS) + SPACE
@@ -521,21 +544,21 @@ yes | sudo apt install rofi && \
 # rofi-theme-selector
 #
 # Install some Command-line tools.
-yes | sudo apt install neofetch && \
-yes | sudo apt install htop && \
+neofetch
+htop
 # ------------------------------------------------------------------------------
 # Snap and Flatpak:
 # Synaptic Package Manager:
-yes | sudo apt install synaptic && \
+synaptic
 # Install GNOME Software:
-yes | sudo apt install gnome-software && \
+# yes | sudo apt install gnome-software && \
 # ------------------------------------------------------------------------------
 # Install Manually
 # Snap:
-#   yes | sudo apt update && sudo apt upgrade && \
-#   yes | sudo apt install snapd && \
-#   yes | sudo snap install core && \
-#   yes | sudo snap install snap-store && \
+special: yes | sudo apt update && sudo apt upgrade
+snapd
+special: yes | sudo snap install core
+special: yes | sudo snap install snap-store
 # Update Snaps:
 # snap refresh --list
 # sudo snap refresh
@@ -543,22 +566,10 @@ yes | sudo apt install gnome-software && \
 # add '/snap/bin' to '$PATH'
 # https://askubuntu.com/questions/965599/where-is-the-install-location-for-the-snap-download-tool
 # .bashrc or .bash_aliases
-# export PATH="$PATH:/snap/bin/"
+echo 'export PATH="$PATH:/snap/bin/"' >> ~/.bashrc
+echo 'export PATH="$PATH:/snap/bin/"' >> ~/.zshrc
+echo 'export PATH="$PATH:/snap/bin/"' >> ~/.config/fish/config.fish
 # ------------------------------------------------------------------------------
-# Flatpak:
-# *** Install Flatpak as root: ***
-# Run 'flatpak_install_as_root.sh' if needed
-#
-#   sudo su root
-#   yes | sudo apt install flatpak
-#   yes | sudo apt install gnome-software-plugin-flatpak
-#   yes | flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-# Exit su:
-#   exit
-#   sudo reboot now
-#
-# Update Flatpak Apps:
-# flatpak update
 #
 # Flatpak Example:
 # Install MS Windows layer translator, Bottle from Flatpak:
@@ -567,71 +578,72 @@ yes | sudo apt install gnome-software && \
 #
 # ------------------------------------------------------------------------------
 # Install a Firewall:
-yes | sudo apt install gufw && \
+gufw
 # ------------------------------------------------------------------------------
 # File and directory monitoring system
 # Gamin is a file and directory monitoring system which allows
 # applications to detect when a file or a directory has been added,
 # removed or modified by somebody else.
-yes | sudo apt install gamin && \
+gamin
 # ------------------------------------------------------------------------------
 # HDD tools
-yes | sudo apt install smartmontools && \
-yes | sudo apt install gsmartcontrol && \
+smartmontools
+gsmartcontrol
 # Install an Antivirus:
-yes | sudo apt install chkrootkit && \
+chkrootkit
 # sudo nano /etc/chkrootkit.conf
 # RUN_DAILY="true"
 # USERNAME=$(whoami)
 # Usage (you do not have to scan immediately):
 # sudo chkrootkit >> "/home/$USERNAME/chkrootkit-report.txt"
-yes | sudo apt install rkhunter && \
-sudo rkhunter --propupd && \
+rkhunter
+special: sudo rkhunter --propupd
+# sudo rkhunter --propupd
 # sudo rkhunter --update
 # Usage (you do not have to scan immediately):
 # sudo rkhunter --check --sk --report-warnings-only >> "/home/$USERNAME/rkhunter-report.txt"
 # ------------------------------------------------------------------------------
 # Install System Restore/Maintenance Tools:
 # Network Time Protocol daemon/utilities
-yes | sudo apt install ntp && \
+ntp
 # tool for selecting tasks
-yes | sudo apt install tasksel && \
+tasksel
 # Partition Manager
-yes | sudo apt install gparted && \
-yes | sudo apt install gnome-disk-utility && \
+gparted
+gnome-disk-utility
 # File Sync
-yes | sudo apt install rsync && \
-yes | sudo apt install grsync && \
+rsync
+grsync
 # Drive Cloning
 # how to clone a drive in linux
 # https://www.makeuseof.com/tag/2-methods-to-clone-your-linux-hard-drive/
-yes | sudo apt install clonezilla && \
+clonezilla
 # System Restore
-yes | sudo apt install timeshift && \
+timeshift
 # Load Program Faster while launching for the second time
-yes | sudo apt install preload && \
+preload
 # seahorse: GUI Keyring Manager
 # https://mexpolk.wordpress.com/2008/02/06/ubuntu-change-default-keyring-password/
-yes | sudo apt install seahorse && \
+seahorse
 # Reduce Eyestrain # Yellow filter for the screen
-yes | sudo apt install redshift-gtk && \
+redshift-gtk
 # Very simple screen magnifier
-yes | sudo apt install magnus && \
+magnus
 # Advanced FreeDesktop.org compliant menu editor
-yes | sudo apt install menulibre && \
+menulibre
 # Prevent Screen from falling asleep # Keep the screen from turning off
 #yes | sudo apt install caffeine && \
 # Command-line system info tool # Hardware info from the console
-yes | sudo apt install hardinfo && \
+hardinfo
 # The Fish Shell
-yes | sudo apt install fish && \
+fish
 # ------------------------------------------------------------------------------
 # Other utilities:
 #
 # Bittorrent client
-yes | sudo apt install transmission && \
+transmission
 # simple browser #ex: firejail surf google.com
-yes | sudo apt install surf && \
+surf
 # GoldenDict Dictionary DB Reader
 # Solve GoldenDict's High CPU usage problem.
 # http://goldendict.org/forum/viewtopic.php?f=4&t=2830
@@ -639,27 +651,29 @@ yes | sudo apt install surf && \
 # -> "Allow full-text search for:" option is enabled (default option) ->
 # -> Disable.
 # yes | sudo apt install goldendict # Install Flatpak
-# flatpak install flathub org.goldendict.GoldenDict
+
+special: flatpak install flathub org.goldendict.GoldenDict
+
 #
 # Goldendict alternative
 # yes | sudo apt install stardict && \
 # See shell/stardict.txt for details.
 #
 # A cross-platform dictionary similar to Wordweb
-yes | sudo apt install artha && \
+artha
 
 # converter between LibreOffice document formats
 # This package provides a commandline utility which can convert from
 # any document format that LibreOffice can import to any document format
 # it can export. It uses LibreOffice's UNO bindings for non-interactive
 # conversion of documents.
-yes | sudo apt install unoconv && \
+unoconv
 
 # CD/DVD:
-yes | sudo apt install brasero && \
+brasero
 
 # Screenshot Utility.
-yes | sudo apt install flameshot && \
+flameshot
 # Defrag NTFS Volumes.
 yes | sudo apt install ntfs-3g && \
 # Terminal Emulator
