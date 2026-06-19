@@ -676,10 +676,23 @@ int package_downloader(void) { // package downloader
     if(strstr(lineContents[lineNumber - 1], "special: ") != NULL) {
       char inputLine[MAX_STRING_LENGTH_4_SPECIAL] = "";
       char lineContentsreduced[MAX_STRING_LENGTH_4_SPECIAL] = "";
-      sf_strncpy(inputLine, lineContents[lineNumber - 1], MAX_STRING_LENGTH_4_SPECIAL);
-      copyStringWithoutPrefix(inputLine, lineContentsreduced, "special: ");
-      (void)printf("\nCommand to pass from the line %d: %s\n", lineNumber, lineContentsreduced);
-      executeCommand(lineContentsreduced);
+      sf_strncpy(inputLine,
+                 lineContents[lineNumber - 1],
+                 MAX_STRING_LENGTH_4_SPECIAL);
+      copyStringWithoutPrefix(
+              inputLine,
+              lineContentsreduced,
+              "special: "
+      );
+
+      if(DRY_RUN) {
+        printf(
+                "\n[DRY RUN] Ignoring special command in "
+                "download-only mode: %s\n",
+                lineContentsreduced
+        );
+      }
+
       continue;
     }
 
