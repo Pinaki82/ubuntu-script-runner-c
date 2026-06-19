@@ -6,17 +6,22 @@ special: yes | sudo apt update
 # Debian update (END).
 # =================================================================
 
-nonexistingpackage
-packageabracadabra
+# =====================================ESSENTIAL PACKAGES ======================
+
+# nonexistingpackage (for testing)
+packageabracadabra (for testing)
+
+python3-pip
+special: python -m pip install --upgrade pip
+special: python3 -m pip install --upgrade pip
+pipx
 gufw
 resolvconf
 clamtk-gnome
 chkrootkit
 rkhunter
 firejail
-pipx
 fish
-# screen: req. by i2pdbrowser
 
 # Do the following:
 # =================================================================
@@ -81,6 +86,8 @@ curl
 git
 git-lfs
 python3-pip
+screen
+# screen: req. by i2pdbrowser
 #
 #
 # ------------------------------------------------------------------------------
@@ -127,7 +134,7 @@ python3-pip
 # ------------------------------------------------------------------------------
 #
 #
-#python -m pip install --upgrade pip && \
+# python -m pip install --upgrade pip && \
 # https://stackoverflow.com/questions/75608323/how-do-i-solve-error-externally-managed-environment-everytime-i-use-pip3
 pipx
 special: pipx install flawfinder
@@ -197,7 +204,7 @@ special: yes | sudo chronyc makestep
 # ------------------------------------------------------------------------------
 # Install PiP:
 python3-pip
-#python -m pip install --upgrade pip && \
+# python -m pip install --upgrade pip && \
 # ------------------------------------------------------------------------------
 
 # Flatpak:
@@ -632,7 +639,7 @@ magnus
 # Advanced FreeDesktop.org compliant menu editor
 menulibre
 # Prevent Screen from falling asleep # Keep the screen from turning off
-#yes | sudo apt install caffeine && \
+# yes | sudo apt install caffeine && \
 # Command-line system info tool # Hardware info from the console
 hardinfo
 # The Fish Shell
@@ -741,38 +748,51 @@ meld
 
 # Terminal Fonts (MUST):
 # * Without these fonts, you'll miss the proper console characters and see boxes everywhere.
-yes | sudo apt install fonts-terminus fonts-terminus-otb xfonts-terminus && \
-yes | sudo apt install xfonts-terminus-dos xfonts-terminus-oblique && \
-yes | sudo apt install xfonts-mona fonts-firacode fonts-league-mono fonts-agave && \
-yes | sudo apt install fonts-inconsolata fonts-ricty-diminished && \
-yes | sudo apt install fonts-jetbrains-mono fonts-anonymous-pro && \
-yes | sudo apt install fonts-monoid fonts-monoid-halfloose && \
-yes | sudo apt install fonts-monoid-halftight fonts-monoid-loose fonts-monoid-tight && \
-yes | sudo apt install fonts-fantasque-sans fonts-hermit fonts-powerline && \
+fonts-terminus
+fonts-terminus-otb
+xfonts-terminus
+xfonts-terminus-dos
+xfonts-terminus-oblique
+xfonts-mona
+fonts-firacode
+fonts-league-mono
+fonts-agave
+fonts-inconsolata
+fonts-ricty-diminished
+fonts-jetbrains-mono
+fonts-anonymous-pro
+fonts-monoid
+fonts-monoid-halfloose
+fonts-monoid-halftight
+fonts-monoid-loose
+fonts-monoid-tight
+fonts-fantasque-sans
+fonts-hermit
+fonts-powerline
 # https://github.com/ryanoasis/nerd-fonts
 
 # Install Fonts in Debian:
 # https://vitux.com/how-to-install-custom-fonts-in-debian/
-yes | sudo apt update && sudo apt install font-manager && \
+special: yes | sudo apt update && sudo apt install font-manager
 
 # Powerful screen color picker based on Qt
-yes | sudo apt install color-picker && \
+color-picker
 
 # ------------------------------------------------------------------------------
 # Markdown to HTML etc.
 
-yes | sudo apt install markdown && \
+markdown
 
 # https://www.howtogeek.com/devops/how-to-create-qr-codes-from-the-linux-command-line/
 # https://linuxconfig.org/list-of-qr-code-generators-on-linux
 # qrencode -s 6 -l H -o "text.png" "This type of QR holds plain text. This text is shown to the user when they scan the QR code. No other action is automatically triggered."
 
-yes | sudo apt install qrencode && \
+qrencode
 
 # Text search utilities
-yes | sudo apt install regexxer && \
-yes | sudo apt install searchmonkey && \
-yes | sudo apt install ripgrep ugrep && \
+regexxer
+searchmonkey
+ripgrep ugrep
 # ugrep --help
 
 # ------------------------------------------------------------------------------
@@ -780,100 +800,119 @@ yes | sudo apt install ripgrep ugrep && \
 # CuteCOM: GUI Serial Monitor
 # cutecom: Graphical serial terminal, like minicom.
 # https://www.pragmaticlinux.com/2021/11/how-to-monitor-the-serial-port-in-linux/
-yes | sudo apt install cutecom && \
+cutecom
 # minicom: Friendly menu driven serial communication program.
 # sympathy: serial port concentrator system - server/client program.
 # https://stackoverflow.com/questions/5347962/how-do-i-connect-to-a-terminal-to-a-serial-to-usb-device-on-ubuntu-10-10-maveri
 # https://www.makeuseof.com/connect-to-serial-consoles-on-linux/
-yes | sudo apt install minicom sympathy && \
+minicom
+sympathy
 # gtkterm: simple GTK+ serial port terminal.
-yes | sudo apt install gtkterm && \
+gtkterm
 # screen: Terminal multiplexer with VT100/ANSI terminal emulation.
-yes | sudo apt install screen && \
+screen
 
 # Req. by PlatformIO CORE CLI
 
-yes | sudo apt purge --auto-remove brltty && \
+special: yes | sudo apt purge --auto-remove brltty
 
-yes | sudo apt update && \
+special: yes | sudo apt update
 # https://www.pragmaticlinux.com/2021/11/how-to-monitor-the-serial-port-in-linux/
-yes | sudo apt install cutecom && \
+cutecom
 # https://askubuntu.com/questions/786367/setting-up-arduino-uno-ide-on-ubuntu
 # https://askubuntu.com/questions/781571/how-to-identify-devices-connected-to-serial-port
 # https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
 # https://0xsuk.github.io/posts/2022-07-19-how-to-install-ch340-on-ubuntu-22.04/
-yes | sudo apt install hwinfo && \
-yes | sudo apt install setserial && \
+hwinfo
+setserial
 
 # GIMP Essentials:
-yes | sudo apt install abr2gbr && \
-yes | sudo apt install gimp-data && \
-yes | sudo apt install gimp-data-extras && \
-yes | sudo apt install gimp-gmic && \
-yes | sudo apt install gimp-gutenprint && \
-yes | sudo apt install gimp-help-common && \
-yes | sudo apt install gimp-help-en-gb && \
-yes | sudo apt install gimp-lensfun && \
-yes | sudo apt install gimp-plugin-registry && \
-yes | sudo apt install gimp-texturize && \
-yes | sudo apt install gtkam-gimp && \
-yes | sudo apt install icc-profiles-free && \
-yes | sudo apt install icc-profiles \
+abr2gbr
+gimp-data
+gimp-data-extras
+gimp-gmic
+gimp-gutenprint
+gimp-help-common
+gimp-help-en-gb
+gimp-lensfun
+gimp-plugin-registry
+gimp-texturize
+gtkam-gimp
+icc-profiles-free
+icc-profiles
 
-yes | sudo apt install gimp-plugin-registry && \
-yes | sudo apt install gmic && \
-yes | sudo apt install gimp-gmic && \
+gimp-plugin-registry
+gmic
+gimp-gmic
 
-yes | sudo apt install gegl && \
-yes | sudo apt install xzgv && \
+gegl
+xzgv
 
 # To open RAW files with GIMP.
-yes | sudo apt install darktable && \
+# darktable
+rawtherapee
+rawtherapee-data
 
 # GIMP:
 
-yes | sudo apt install gimp gimp-data gimp-data-extras gimp-gmic gimp-gutenprint gimp-help-common gimp-help-en-gb gimp-lensfun gimp-plugin-registry gimp-texturize icc-profiles icc-profiles-free gegl gtkam-gimp xzgv \
+gimp
+gimp-data
+gimp-data-extras
+gimp-gmic
+gimp-gutenprint
+gimp-help-common
+gimp-help-en-gb
+gimp-lensfun
+gimp-plugin-registry
+gimp-texturize
+icc-profiles
+icc-profiles-free
+gegl
+gtkam-gimp xzgv
 
 # Converseen: A free cross-platform batch image processor. https://converseen.fasterland.net/
 
-yes | sudo apt install converseen && \
+converseen
 
 # pnpm package manager:
-echo "If you've executed the first install script 01_debian_essential.sh already, you have pnpm installed on your system. (yes I did = 1. No, I did not = 0)"
-read choice
-if [ "${choice}" != '1' ]; then
-  echo "Ok!"
-   sleep 1
-   # https://pnpm.io/installation
-   curl -fsSL https://get.pnpm.io/install.sh | sh -
-
-fi
+# echo "If you've executed the first install script 01_debian_essential.sh already, you have pnpm installed on your system. (yes I did = 1. # No, I did not = 0)"
+# read choice
+# if [ "${choice}" != '1' ]; then
+#  echo "Ok!"
+#   sleep 1
+#   # https://pnpm.io/installation
+special: curl -fsSL https://get.pnpm.io/install.sh | sh -
+#
+# fi
 
 # Install 'c': Use C as a shell scripting language:
-echo "If you've installed the 'c' scripting language support already, type 0 to skip installing it again. Type any other numbers to proceed with the installation."
-echo "https://github.com/ryanmjacobs/c"
-read choice
-if [ "${choice}" != '0' ]; then
-  echo "Ok! You'll install the 'c' scripting language support."
-   sleep 1
-   # ------------------------------------------------------------------------------
-   # Install 'c': Use C as a shell scripting language:
-   # Refer to '01_debian_essential.sh'.
-   # https://github.com/ryanmjacobs/c
-   cd ~/
-   yes | sudo apt install build-essential trash-cli
-   wget https://raw.githubusercontent.com/ryanmjacobs/c/master/c
-   sudo install -m 755 c /usr/bin/c
-   trash c
-   # ------------------------------------------------------------------------------
-else
-  echo "Skipping..."
-  sleep 1
+# echo "If you've installed the 'c' scripting language support already, type 0 to skip installing it again. Type any other numbers to # proceed with the installation."
+# echo "https://github.com/ryanmjacobs/c"
+# read choice
+# if [ "${choice}" != '0' ]; then
+#   echo "Ok! You'll install the 'c' scripting language support."
+#    sleep 1
+#    # ------------------------------------------------------------------------------
+#    # Install 'c': Use C as a shell scripting language:
+#    # Refer to '01_debian_essential.sh'.
+#    # https://github.com/ryanmjacobs/c
+#    cd ~/
+build-essential
+trash-cli
+special: wget https://raw.githubusercontent.com/ryanmjacobs/c/master/c
+special: sudo install -m 755 c /usr/bin/c
+special: trash c
+#    # ------------------------------------------------------------------------------
+# else
+#   echo "Skipping..."
+#   sleep 1
+#
+# fi
 
-fi
 
+# =====================================ESSENTIAL PACKAGES (END)=================
 
-
+# =====================================Debian Minimum Required Packages=========
 
 
 
