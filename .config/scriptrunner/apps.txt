@@ -306,7 +306,7 @@ arandr
 
 # File Compression:
 unzip
-sudo apt install bzip2
+bzip2
 tar
 xz-utils
 lrzip
