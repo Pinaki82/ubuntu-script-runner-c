@@ -38,6 +38,6 @@ sudo apt install clamtk-gnome && \
 sudo apt install chkrootkit && \
 sudo apt install rkhunter && \
 sudo apt install firejail && \
-sudo apt install fish && \
+sudo apt install fish \
 
 
