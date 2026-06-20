@@ -6,9 +6,9 @@ Install apps on Ubuntu/derivatives and update the system from a simple list.
 
 # How to Use
 
-See the [How to Use](How to Use.md) document. 
+See the [How_to_Use](How_to_Use.md) document. 
 
->  `*` Download the file [How to Use.pdf](How to Use.pdf) to your phone.
+>  `*` Download the file [How_to_Use.pdf](How_to_Use.pdf) to your phone.
 
 # Building and installing
 
