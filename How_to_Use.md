@@ -32,6 +32,8 @@ The line will look something like this:
 
 **`CTRL`+`X`** [NOTE: On VirtualBox, use the Soft Keyboard from the menu bar.]
 
+Install the OS. After installing the OS, you will need to repeat this step.
+
 ---
 
 ### Step 2: Enter the GUI desktop.
