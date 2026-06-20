@@ -1,5 +1,12 @@
 #!/bin/bash
 
+yes | sudo apt update && sudo apt upgrade && \
+yes | sudo apt update && \
+yes | sudo apt list --upgradable && \
+yes | sudo apt upgrade && \
+yes | sudo apt update && \
+yes | sudo apt install -f && \
+
 sudo apt install build-essential && \
 sudo apt install wget && \
 sudo apt install curl && \
