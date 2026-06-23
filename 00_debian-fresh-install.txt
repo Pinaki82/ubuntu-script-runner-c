@@ -1704,6 +1704,7 @@ on your new server with:
 sudo xargs -a packages_list.txt apt install
 ########################################################################
 
+############################ PlatformIO ################################
 # sudo usermod -a -G plugdev $USER  && \
 # sudo usermod -a -G dialout $USER && \
 # https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html#cmd-device-monitor
@@ -1747,5 +1748,4 @@ sudo xargs -a packages_list.txt apt install
 #                                                  For PlaltformIO
 
 # =================================================================
-# developer utilities (END)
-# =================================================================
+
