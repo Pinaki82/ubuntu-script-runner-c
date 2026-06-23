@@ -1,0 +1,1762 @@
+Programs to Create Bootable USB Drives:
+https://rufus.ie/en/ (Recommended for Windows users)
+https://etcher.balena.io/
+
+Debian: https://www.debian.org/
+
+Firmware:
+
+https://cdimage.debian.org/images/unofficial/non-free/firmware/
+
+Download (Recommended):
+https://www.debian.org/download
+debian-xx.x.x-amd64-netinst.iso
+
+Debian Live Images:
+https://unix.stackexchange.com/questions/307251/is-there-a-try-debian-without-install-option
+https://www.debian.org/CD/live/
+
+Debian-12-bookworm firmware:
+https://cdimage.debian.org/images/unofficial/non-free/firmware/bookworm/12.0.0/
+File: firmware.zip
+
+A Basic Guide:
+https://phoenixnap.com/kb/how-to-install-debian-10-buster
+
+Troubleshoot Blank Screen after crossing the GRUB Menu section:
+https://forums.debian.net/viewtopic.php?t=63844
+
+Press 'e' when the GRUB appears.
+Find the line containing 'ro quiet'.
+Add the following commands to the end of the line,
+splash nomodeset
+CTRL+x [NOTE: On VirtualBox, use the Soft Keyboard from the menu bar.]
+
+Once you enter the desktop:
+Add the current user to sudoers:
+
+su
+sudo su root
+sudo nano /etc/sudoers
+
+Find the section:
+#User privilege specification
+root  ALL=(ALL:ALL) ALL
+Then, add your username there as described below.
+
+-------------------------------------
+#User privilege specification
+root  ALL=(ALL:ALL) ALL
+yourusername ALL=(ALL: ALL) ALL
+-------------------------------------
+
+Reboot the system.
+
+sudo reboot now
+
+Add the current user to sudoers again by doing:
+
+sudo usermod -aG sudo $(whoami)
+
+Edit the GRUB Bootloader:
+https://unix.stackexchange.com/questions/538562/how-do-i-edit-grub-cfg-and-save-it
+
+sudo nano /etc/default/grub
+
+Find the line containing 'ro quiet'
+Add the following in the same line
+splash nomodeset
+
+sudo update-grub
+sudo update-grub2
+
+Hint: You are currently not seeing messages from other users and the system.
+      Users in groups 'adm', 'systemd-journal' can see all messages.
+      Pass -q to turn off this notice.
+https://serverfault.com/questions/717725/journalctl-access-for-non-root-users
+
+sudo usermod -a -G systemd-journal $(whoami)
+sudo reboot now
+
+Update the system:
+
+yes | sudo apt update && sudo apt upgrade
+
+
+Do the following:
+# =================================================================
+# # https://askubuntu.com/questions/800155/service-command-not-found
+# service: command not found
+# Solve the problem by adding
+# export PATH="$PATH:/usr/sbin"
+# to your .bashrc, .bash_aliases, .bash_profile, .profile
+# =================================================================
+
+echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bash_profile
+echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bashrc
+echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.bash_aliases
+echo "export PATH="'"$PATH:/usr/sbin"'"" >> ~/.profile
+
+Add $HOME/.local/bin/ to the PATH for pip/cargo/pipx etc.:
+
+echo "export PATH="'"$HOME/.local/bin/:$PATH"'"" >> ~/.bash_profile
+echo "export PATH="'"$HOME/.local/bin/:$PATH"'"" >> ~/.bashrc
+echo "export PATH="'"$HOME/.local/bin/:$PATH"'"" >> ~/.bash_aliases
+
+
+# ======================INSTALL OH-MY-BASH======================================
+# ------------------------------------------------------------------------------
+# OH-MY-BASH:
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+# ------------------------------------------------------------------------------
+# Bash Language Server
+# https://github.com/bash-lsp/bash-language-server.git
+yes | sudo npm i -g bash-language-server && \
+# bash-language-server --help
+# ------------------------------------------------------------------------------
+# Fish-shell-like autocompletion in Bash-shell
+# Ecosia: fish shell like autocomplete in bash
+# https://unix.stackexchange.com/questions/109366/does-bash-have-similar-features-such-as-fishs-autosuggestions-and-highlighting
+# https://github.com/akinomyoga/ble.sh
+# https://github.com/dvorka/hstr
+
+
+yes | sudo apt install trash-cli && \
+
+git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git && \
+make -C ble.sh install PREFIX=~/.local && \
+echo 'source ~/.local/share/blesh/ble.sh' >> ~/.bashrc && \
+source ~/.bashrc && \
+source ~/.bash_aliases && \
+trash ble.sh && \
+
+# Intel CPU support:
+yes | sudo apt install software-properties-common apt-transport-https ca-certificates curl -y && \
+yes | sudo apt install xserver-xorg-video-intel && \
+yes | sudo apt install mesa-utils && \
+yes | sudo apt install intel-opencl-icd libmfx1 && \
+yes | sudo apt install vainfo && \
+yes | sudo apt install libmfx1 && \
+yes | sudo apt install i965-va-driver && \
+# To use Debian Bookworm with 4th-gen (Haswell Bridge/LGA1150) Intel CPUs: sudo apt purge --auto-remove intel-media-va-driver*
+#
+# ==============================================================================
+# Edit the GRUB Bootloader Menu after installing drivers from Intel:
+#
+# sudo mousepad /etc/default/grub
+# https://askubuntu.com/questions/1383040/no-dev-dri-directory-in-ubuntu-server-20-04
+# https://askubuntu.com/questions/1153746/intel-graphics-card-not-bound-to-driver-after-nvidia-driver-installed-ubuntu-18/1154067#1154067
+#
+#GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nomodeset"
+#https://askubuntu.com/questions/1383040/no-dev-dri-directory-in-ubuntu-server-20-04
+#https://askubuntu.com/questions/1153746/intel-graphics-card-not-bound-to-driver-after-nvidia-driver-installed-ubuntu-18/1154067#1154067
+#GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.alpha_support=1"
+
+# Change this line
+
+# GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nomodeset"
+
+# to
+
+# GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.alpha_support=1"
+
+# (*** uncommented).
+
+# Update GRUB:
+# https://itsfoss.com/update-grub/
+#
+# sudo update-grub
+# sudo grub-mkconfig -o /boot/grub/grub.cfg
+# ==============================================================================
+#
+# Intel HW-Acceleration (didn't work. You might need the following packages later).
+# sudo apt install jellyfin jellyfin-ffmpeg5 jellyfin-server jellyfin-web
+# See jellyfin.txt for details.
+# ----------------------------------------------------------------------
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+================================================================================
+===================================== IMPORTANT ================================
+Install basic packages:
+This install script contains the most essential
+packages that you'll end up installing anyway.
+
+Run the BASH Script '01_debian_essential.sh' first.
+
+chmod +x 01_debian_essential.sh
+./01_debian_essential.sh
+
+================================================================================
+
+Disable Swap if you have SSDs and more than 3GB of RAM:
+https://www.tecmint.com/disable-swap-partition-in-centos-ubuntu/
+
+
+Install the most essential core build tool:
+
+sudo apt install build-essential dkms module-assistant linux-headers-$(uname -r)
+
+Install the common properties package (will be needed later):
+
+yes | sudo apt install software-properties-common
+
+
+Install 'c': Use C as a shell scripting language:
+https://github.com/ryanmjacobs/c
+
+cd ~/
+sudo apt install build-essential trash-cli
+wget https://raw.githubusercontent.com/ryanmjacobs/c/master/c
+sudo install -m 755 c /usr/bin/c
+trash c
+
+
+Enable Backports (not recommended):
+https://backports.debian.org/Instructions/
+https://linuxconfig.org/how-to-install-and-use-debian-backports
+
+sudo nano/vim/mousepad /etc/apt/sources.list
+
+Add these two lines:
+
+deb http://ftp.debian.org/debian trixie-backports main
+deb-src http://ftp.debian.org/debian trixie-backports main
+
+*** NOTE: Always check for the appropriate VERSIONS.
+VERSIONS should not mismatch even in the future. ***
+
+bookworm(stable) < trixie(testing)
+More info: https://www.debian.org/releases/
+
+yes | sudo apt update
+
+yes | sudo apt install -t trixie-backports <package>
+Or,
+yes | sudo aptitude install <package>/trixie-backports
+
+However, Debian Trixie has not been released yet.
+
+Debian-XFCE Net-Install ISO didn't install any calculator app.
+# sudo apt install gnome-calculator (Feb. 21, 2025: 'gnome-calculator' is crashing.)
+# Install Qalculate
+# https://www.linuxlinks.com/calculators/
+# https://qalculate.github.io/index.html
+flatpak install flathub io.github.Qalculate
+
+# Install hdparm (to run commands like: sudo hdparm -I /dev/sdX | grep "Security"):
+# https://installati.one/install-hdparm-debian-11/
+sudo apt -y install hdparm
+
+
+Install GVim+Vim:
+
+apt search vim-gtk
+sudo apt install vim-gtk3
+Or, if you do not want the GUI Vim,
+sudo apt install vim
+
+If you're on a VM, see the text file 'virtualbox-ms-win.txt'.
+
+Partitioning Drives:
+https://techencyclopedia.wordpress.com/2020/04/21/debian-10-manual-partition-for-boot-swap-root-home-tmp-srv-var-var-mail-var-log/
+
+# LSB support:
+# sudo apt install lsb-release
+
+Codecs:
+https://www.sys-hint.com/1075-Installing-Multimedia-Codecs-on-Debian-10
+https://phoenixnap.com/kb/add-apt-repository-command-not-found-ubuntu
+
+yes | sudo apt install software-properties-common
+yes | sudo apt-add-repository non-free
+yes | sudo apt-add-repository contrib
+# https://serverfault.com/questions/240920/how-do-i-enable-non-free-packages-on-debian
+yes | sudo apt-add-repository --component non-free
+
+# Edit /etc/apt/sources.list with sudo privileges
+# sudo nano /etc/apt/sources.list
+# Add the following lines if these lines are not present.
+# If the lines are found commented, uncomment the lines.
+---
+deb http://deb.debian.org/debian/ bookworm non-free main contrib non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm non-free main contrib non-free-firmware
+
+deb http://security.debian.org/debian-security bookworm-security non-free main contrib non-free-firmware
+deb-src http://security.debian.org/debian-security bookworm-security non-free main contrib non-free-firmware
+
+deb http://deb.debian.org/debian/ bookworm-updates non-free main contrib non-free-firmware
+deb-src http://deb.debian.org/debian/ bookworm-updates non-free main contrib non-free-firmware
+---
+
+yes | sudo apt update && sudo apt upgrade
+yes | sudo apt install firmware-linux-nonfree
+
+
+# Intel CPU support:
+sudo apt install software-properties-common apt-transport-https ca-certificates curl -y
+sudo apt install xserver-xorg-video-intel
+sudo apt install mesa-utils
+sudo apt install intel-opencl-icd libmfx1
+#
+# ==============================================================================
+# Edit the GRUB Bootloader Menu after installing drivers from Intel:
+#
+# sudo mousepad /etc/default/grub
+# https://askubuntu.com/questions/1383040/no-dev-dri-directory-in-ubuntu-server-20-04
+# https://askubuntu.com/questions/1153746/intel-graphics-card-not-bound-to-driver-after-nvidia-driver-installed-ubuntu-18/1154067#1154067
+#
+#GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nomodeset"
+#https://askubuntu.com/questions/1383040/no-dev-dri-directory-in-ubuntu-server-20-04
+#https://askubuntu.com/questions/1153746/intel-graphics-card-not-bound-to-driver-after-nvidia-driver-installed-ubuntu-18/1154067#1154067
+#GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.alpha_support=1"
+
+# Change this line
+
+# GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nomodeset"
+
+# to
+
+# GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.alpha_support=1"
+
+# (*** uncommented).
+
+# Update GRUB:
+# https://itsfoss.com/update-grub/
+#
+# sudo update-grub
+# sudo grub-mkconfig -o /boot/grub/grub.cfg
+# ==============================================================================
+#
+# Intel HW-Acceleration (didn't work. You might need the following packages later).
+# sudo apt install jellyfin jellyfin-ffmpeg5 jellyfin-server jellyfin-web
+# See jellyfin.txt for details.
+
+
+# yes | sudo apt install vlc (Choose the Flatpak version. Do it later.)
+yes | sudo apt install libavcodec-extra
+yes | sudo apt install libdvdread4 libdvdcss2
+yes | sudo dpkg-reconfigure libdvd-pkg
+
+# Winamp alternative
+# https://www.reddit.com/r/Ubuntu/comments/tno11g/looking_for_a_winamp_equivalent_for_ubuntu/
+sudo apt install audacious
+
+# HDMI Display support:
+yes | sudo apt install autorandr
+yes | sudo apt install arandr
+
+MS Core Fonts:
+https://www.linuxcapable.com/how-to-install-microsoft-fonts-on-debian-linux/
+
+yes | sudo apt update && sudo apt upgrade
+yes | sudo apt-add-repository contrib non-free
+
+If the command fails,
+
+yes | sudo apt install software-properties-common
+
+Install MS Fonts,
+
+yes | sudo apt update && sudo apt upgrade
+yes | sudo apt-add-repository contrib non-free
+yes | sudo apt install ttf-mscorefonts-installer
+# https://averagelinuxuser.com/microsoft-fonts-linux/#:~:text=Calibri%20and%20Cambria%20fonts,-Unfortunately%2C%20this%20package&text=These%20Google%20fonts%20are%20metric,package%20manager%20and%20install%20them
+yes | sudo apt install fonts-crosextra-carlito fonts-crosextra-caladea && \
+sudo fc-cache
+
+yes | sudo apt install fonts-texgyre fonts-texgyre-math fonts-urw-base35
+yes | sudo apt install fonts-apropal fonts-beteckna fonts-breip fonts-cabin
+yes | sudo apt install fonts-liberation fonts-liberation2 fonts-lindenhill fonts-oxygen
+yes | sudo apt install fonts-play fonts-ubuntu fonts-ubuntu-console fonts-tiresias
+yes | sudo apt install texlive-fonts-extra
+yes | sudo apt install fonts-croscore
+sudo fc-cache
+
+yes | sudo apt install fonts-courier-prime
+sudo fc-cache
+
+yes | sudo apt install "fonts-gnutypewriter"
+sudo fc-cache
+
+# Charmap
+yes | sudo apt install charmap.app
+
+
+# Display dialog boxes
+yes | sudo apt install zenity
+
+Themes and Icons:
+Search the web version of the Debian repository for the package.
+search the apt repo from the command line.
+Gray Bird:
+apt search greybird-gtk-theme
+yes | sudo apt install greybird-gtk-theme
+Papyrus:
+apt search papirus-icon-theme
+yes | sudo apt install papirus-icon-theme
+Numix:
+yes | sudo apt install numix-*
+Paper:
+yes | sudo apt install paper-icon-theme
+Obsidian:
+yes | sudo apt install obsidian-icon-theme
+PRO-dark-XFCE-4.14
+https://www.xfce-look.org/p/1207818/
+Extract to: /usr/share/themes
+sudo thunar /usr/share/themes
+# arc-theme
+yes | sudo apt install arc-theme
+tar -xvf PRO-dark-XFCE-4.14.tar.xz
+sudo cp -r PRO-dark-XFCE-4.14/ /usr/share/themes/PRO-dark-XFCE-4.14
+sudo thunar /usr/share/themes
+sudo chmod -R 755 /usr/share/themes/PRO-dark-XFCE-4.14
+
+================================================================================
+        PYTHON, PIP3, PIPX, CONDA (MINI), AND PYTORCH (CPU)
+================================================================================
+sudo apt install python3-pip
+# Don't issue the command: python -m pip install --upgrade pip
+pip install pip-autoremove
+#usage: pip-autoremove -y <package_name>
+sudo apt install pipx
+================================================================================
+
+
+================================================================================
+Inject a dependency module directly into the PIPX Environment:
+pipx runpip <your_actual_package> install <dependency_module_to_inject>
+================================================================================
+
+
+================================================================================
+MINICONDA:
+https://www.anaconda.com/download/success
+https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
+
+--------------------------------------------------------------------------------
+bash
+cd Downloads/
+bash Anaconda3-202x.0x-x-Linux-x86_64.sh
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+geany .bash_aliases or .bashrc
+--------------------------------------------------------------------------------
+
+Add:
+--------------------------------------------------------------------------------
+export PATH="$HOME/anaconda3/condabin:$PATH"
+export PATH="$HOME/anaconda3/bin:$PATH"
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+fish
+fish_add_path $HOME/anaconda3/condabin
+fish_add_path $HOME/anaconda3/bin
+conda list
+exit
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+conda update conda
+conda init
+source ~/.bash_aliases
+source ~/.bashrc
+--------------------------------------------------------------------------------
+
+~ 11 GB
+================================================================================
+Delete Environments:
+
+--------------------------------------------------------------------------------
+conda env remove --name project
+conda list | grep nvidia
+conda list | grep cuda
+conda activate latexocr
+pip uninstall -y dependencies/packages
+--------------------------------------------------------------------------------
+================================================================================
+
+
+================================================================================
+PyTorch:
+https://pytorch.org/get-started/locally/
+CPU-Only version:
+
+--------------------------------------------------------------------------------
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+--------------------------------------------------------------------------------
+================================================================================
+
+
+================================================================================
+List of PIPX packages:
+
+pipx list
+venvs are in /home/YOUR_USERNAME/.local/pipx/venvs
+apps are exposed on your $PATH at /home/YOUR_USERNAME/.local/bin
+   package archivy 1.7.7, installed using Python 3.11.2
+    - archivy
+   package bpytop 1.0.68, installed using Python 3.11.2
+    - bpytop
+   package cmake-init 0.41.1, installed using Python 3.11.2
+    - cmake-init
+   package cpplint 2.0.2, installed using Python 3.11.2
+    - cpplint
+   package esptool 5.0.2, installed using Python 3.11.2
+    - esp_rfc2217_server
+    - esp_rfc2217_server.py
+    - espefuse
+    - espefuse.py
+    - espsecure
+    - espsecure.py
+    - esptool
+    - esptool.py
+   package flawfinder 2.0.19, installed using Python 3.11.2
+    - flawfinder
+   package grip 4.6.2, installed using Python 3.11.2
+    - grip
+   package lizard 1.17.31, installed using Python 3.11.2
+    - lizard
+   package offvsix 0.1.3, installed using Python 3.11.2
+    - offvsix
+   package radio-active 2.9.1, installed using Python 3.11.2
+    - radio
+    - radioactive
+   package rapid-latex-ocr 0.0.9, installed using Python 3.11.2
+    - rapid_latex_ocr
+   package tictacsync 0.96a0, installed using Python 3.11.2
+    - LTCcheck
+    - multi2polywav
+    - remergemix
+    - synciso
+    - tictacsync
+   package tldr 3.4.1, installed using Python 3.11.2
+    - tldr
+   package youtube-dl 2021.12.17, installed using Python 3.11.2
+    - youtube-dl
+   package yt-dlp 2025.7.21, installed using Python 3.11.2
+    - yt-dlp
+================================================================================
+
+
+
+Add Wisker Menu and delete 'Applications Menu' (from the extreme left):
+
+Right-click on the Panel (found on the top of the screen),
+Panel Preferences -> Items -> Add -> Whisker Menu
+                           -> Delete -> Window Buttons
+                           -> Add -> Weather Update
+
+Set the SUPER (WINDOWS) Key to open Whisker Menu:
+
+Settings -> Keyboard -> Application Shortcuts - Add
+/usr/bin/xfce4-popup-whiskermenu
+
+Right-click on the Clock -> Properties -> Select a Clock/Date Format
+
+Weather Forecast:
+
+Right-click on the Panel (found on the top of the screen),
+Panel Preferences -> Items -> Add -> Launcher
+                                  -> Add a new empty item
+                                  -> Name: wttr.in
+                                     Comment: Weather
+                                     Command: xfce4-terminal --maximize --hold --command="curl wttr.in/kolkata"
+                                  -> Icon: indicator-weather
+                                  -> Options: Run in terminal
+
+https://forum.xfce.org/viewtopic.php?id=17600
+
+sudo apt install gnome-weather 
+
+Right-click on the Panel (found on the top of the screen),
+Panel Preferences -> Items -> Add -> Launcher
+                                  -> Add a new empty item
+                                  -> Name: gnome-weather
+                                     Comment: gnome-weather
+                                     Command: gnome-weather
+                                  -> Icon: gnome-weather
+
+
+
+Open Thunar File Manager.
+Edit -> Configure custom actions...-> Add (+)
+
+Name: Kitty Here
+Description: Kitty Terminal Emulator in this Directory Tree
+Submenu:
+Command: kitty --directory %f
+Appearance Conditions TAB:
+File Pattern: *
+Range (min-max):
+Appears if selection contains:
+Directories ** (CHECK)
+
+Edit -> Configure custom actions...-> Add (+)
+
+Name: Sakura TE Here
+Description: Open Sakura Terminal Emulator Here
+Submenu:
+Command: sakura %f
+Appearance Conditions TAB:
+File Pattern: *
+Range (min-max):
+Appears if selection contains:
+Directories ** (CHECK)
+
+https://github.com/clayrisser/debian-ghostty
+Edit -> Configure custom actions...-> Add (+)
+Name: Ghostty
+Description: Ghostty Terminal in this Directory Tree
+Command: ghostty
+Icon: utilities-terminal
+File Pattern: *
+Range (min-max): <blank>
+Appear if: Directories
+
+Edit -> Configure custom actions...-> Add (+)
+Name: WezTerm
+Description: WezTerm Terminal in this Directory Tree
+Command: wezterm start --cwd %f
+Icon: org.wezfurlong.wezterm
+File Pattern: *
+Range (min-max): *
+Appear if: Directories
+
+-----------------
+chatgpt-4o-latest-20250326
+✅ Working Command for Thunar Custom Action with WezTerm
+Try this command:
+wezterm start --cwd %f
+Explanation:
+    wezterm start is the correct subcommand to spawn a new terminal window.
+    --cwd <path> tells WezTerm to start the shell in that directory.
+    %f in Thunar custom actions is replaced by the selected file/folder path.
+
+    If you're selecting a folder, %f will be the folder path directly.
+    If you're selecting a file, you might want to use %d (the directory containing the file) instead.
+
+✔️ Bonus: Using %d for Files
+If you want to support launching WezTerm in the directory containing a selected file, you can use:
+wezterm start --cwd %d
+-----------------
+
+Edit -> Configure custom actions...-> Add (+)
+
+Name: GITK
+Description: Open GITK in this folder
+Submenu:
+Command: gitk %f
+Appearance Conditions TAB:
+File Pattern: *
+Range (min-max):
+Appears if selection contains:
+Directories ** (CHECK)
+
+Edit -> Configure custom actions...-> Add (+)
+
+Name: Giggle
+Description: GUI GIT Client
+Submenu:
+Command: giggle %f
+Appearance Conditions TAB:
+File Pattern: *
+Range (min-max):
+Appears if selection contains:
+Directories ** (CHECK)
+
+Name: Duration of all video files
+Command: xfce4-terminal -e "bash -c '$HOME/shell/ffmpeg_scripts/linux/duration-total.sh';read"
+File pattern: *
+Appears if selection contains: Directories
+Icon: alarm-clock-triggered
+
+# * Written by Anthropic Claude 3.5 Haiku
+Name: Duration of Selected Video Files
+Command: $HOME/.local/share/applications/thunar-video-duration-action.sh %F
+File pattern: *.mp4;*.avi;*.mkv;*.mov;*.wmv;*.webm;*.MP4;*.AVI;*.MKV;*.MOV;*.WMV;*.WEBM
+Appears if selection contains: Video Files
+Icon: alarm-clock-triggered
+
+# Prerequisites:
+# sudo apt install ffmpeg zenity bc
+# chmod +x $HOME/.local/share/applications/thunar-video-duration-action.sh
+
+Name: Mediainfo-GUI
+Description: technical and tag information about a video or audio file
+Submenu:
+Command: mediainfo-gui %f
+Appearance Conditions TAB:
+File Pattern: *
+Range (min-max): *
+Appears if selection contains: Video Files
+Icon: camera-video
+
+# https://www.howtogeek.com/strip-photo-metadata-with-linux-exiftool/
+Name: Strip Metadata
+Command: exiftool -all= %F
+File pattern: *
+Appears if selection contains: Image Files
+Icon: view-list-images
+
+https://www.baeldung.com/linux/files-remove-metadata
+Name: MAT2: Clean Metadata
+Command: mat2 %F
+File pattern: *
+Appears if selection contains: Text+Audio+Video+Image+Other Files (except for Directories)
+Icon: application-pdf
+
+Name: Create symlink
+Command: ln -Ts %f %n" (symlink)"
+File pattern: *
+Appears if selection contains: Directories, other files (or, tick all the boxes)
+
+Name: Convert to ODT
+Command: unoconv -f odt %F
+File pattern: *.doc;*.docx
+Appears if selection contains: Other files
+Icon: google-docs
+
+Name: Convert to DOCX
+Command: unoconv -f docx %F
+File pattern: *.odt;*.odp;*.ods
+Appears if selection contains: Other files
+Icon: google-docs
+
+Name: Export to PDF
+Command: unoconv -f pdf %F
+File pattern: *.doc;*.docx;*.odt;*.odp;*.pps;*.ppt;*.xls;*.xlsx;*.ods;*.pptx
+Appears if selection contains: Other files
+Icon: application-pdf
+
+Note: You will need unoconv package for all following actions.
+sudo apt install unoconv (360MB)
+Type man unoconv for details.
+
+Name: Download subtitles
+Command: ~/.local/bin/OpenSubtitlesDownload.py --gui=gnome %F
+File pattern: *
+Appears if selection contains: Video Files
+Icon: gnome-subtitles
+
+Note: You will need to follow the instructions on OpenSubtitlesDownload which requires python and zenity.
+
+https://github.com/emericg/OpenSubtitlesDownload.git
+
+mkdir -p ~/.local/share/nautilus/scripts/
+cd ~/.local/share/nautilus/scripts/
+wget https://raw.githubusercontent.com/emericg/OpenSubtitlesDownload/master/OpenSubtitlesDownload.py
+chmod u+x OpenSubtitlesDownload.py
+
+Name: Convert to JPEG
+Command: convert %f -quality 75 %f.jpg
+File pattern: *.png;*.webp
+Appears if selection contains: Image Files
+
+Name: ProRes to MP4 8 bits
+Command: xfce4-terminal -e "bash -c 'ffmpeg -i %f -c:v mjpeg -q:v 0 -crf 0 -preset ultrafast -an %f-2.mov && ffmpeg -i %f-2.mov -c:v libx264 -q:v 0 -preset fast -crf 16 -aspect 16:9 -an %f-3.mov && trash %f-2.mov; read'"
+File pattern: *
+Appears if selection contains: Video files
+Icon: application-video
+
+Name: ProRes to 10-bit 4:2:2 x265 MKV
+# https://stackoverflow.com/questions/62642013/how-to-encode-a-video-file-to-x265-10bit-main10-profile-in-ffmpeg
+Command: xfce4-terminal -e "bash -c 'ffmpeg -i %f -c:v dnxhd -filter:v "format=yuv422p10le" -profile:v dnxhr_hqx -b:v 746M -an %f-2.mov && ffmpeg -i %f-2.mov -pix_fmt yuv422p10le -c:v libx265 -crf 28 -x265-params profile=main10 %f-3.mkv && trash %f-2.mov; read'"
+File pattern: *
+Appears if selection contains: Video files
+Icon: emblem-videos
+
+Name: Open with Exiftool
+Command: xfce4-terminal --hold -e "exiftool %f"
+(Old: xfce4-terminal -e "bash -c 'exiftool %f; read'" or, xfce4-terminal --hold -e "bash -c 'exiftool %f; read'")
+File pattern: *
+Appears if selection contains: Image Files
+Icon: emblem-information
+
+The bash -c with the read command ensures that the terminal window stays open after displaying the metadata, giving you time to review the information before the window closes.
+
+Name: MediaInfo-CLI
+Command: xfce4-terminal --hold -e "mediainfo %f"
+(from xfce4-terminal --hold -e "bash -c 'mediainfo %f; read'" (old))
+File pattern: *
+Appears if selection contains: Video Files
+Icon: camera-video
+
+Thunar - Custom Actions:
+https://docs.xfce.org/xfce/thunar/custom-actions#create_a_symbolic_link
+https://help.ubuntu.com/community/ThunarCustomActions
+
+# * Written by Gemini 2.5 Flash
+Name: Calculate MD5 Checksum
+Command: xfce4-terminal --hold -e "md5sum %f"
+Icon: org.xfce4.terminal.emulator
+Selection -> Pattern: * Range: * Appears if: All checked except for the Directories.
+
+# * Written by Gemini 2.5 Flash
+Name: Create MD5 Report
+Description: Creates a checksums.md5 report for all files in this directory.
+Command:
+xfce4-terminal --hold -e 'bash -c "md5sum * > checksums.md5; echo; echo Creates a checksums.md5 report for all files in this directory. Report saved to checksums.md5; echo; echo Close the terminal. Usually, SHIFT+CTRL+q; read"'
+Icon: document-edit-sign
+Selection -> Pattern: * Range: * Appears if: 'Directories' is checked.
+
+# * The command was generated by Google Search AI
+Name: Calculate SHA256 Checksum
+Description: Calculate SHA256 Checksum
+Command: xfce4-terminal --hold -e "sha256sum %f"
+Icon: org.xfce.terminal
+Selection -> Pattern: * Range: * Appears if: All checked except for the Directories.
+
+Name: Create SHA256 Report
+Description: Creates a checksums.sha256 report for all files in this directory.
+Command:
+xfce4-terminal --hold -e 'bash -c "sha256sum * > checksums.sha256; echo; echo Creates a checksums.sha256 report for all files in this directory. Report saved to checksums.sha256; echo; echo Close the terminal. Usually, SHIFT+CTRL+q; read"'
+Icon: document-edit-sign
+Selection -> Pattern: * Range: * Appears if: 'Directories' is checked.
+
+Name: Check md5 checksums
+Description: Examine a file that includes md5 checksums paired with their respective filenames and validate the report. Right-click on such a file and select this option.
+Command: xfce4-terminal --hold -e "md5sum --check %f"
+Icon: document-edit-sign
+Selection -> Pattern: * Range: * Appears if: All checked except for the Directories.
+
+Name: Check SHA256 checksums
+Description: Examine a file that includes SHA256 checksums paired with their respective filenames and validate the report. Right-click on such a file and select this option.
+Command: xfce4-terminal --hold -e "sha256sum --check %f"
+Icon: document-edit-sign
+Selection -> Pattern: * Range: * Appears if: All checked except for the Directories.
+
+
+Find the XFCE Dock at the bottom of the screen.
+Display TAB -> Measurements -> Automatically increase the length (CHECK)
+Items TAB -> Add (+) -> Window Buttons
+Configure Window Buttons -> Appearance -> UNCHECK 'Show button labels'
+              -> Behaviour -> CHECK 'Group windows by application'
+
+Settings -> Appearance -> Style -> PRO-dark-XFCE-4.14
+                          Turn on 'Set matching Xfwm4 theme if there is one'
+                       -> Icons -> ePapirus/Vimix/Flat-Remix-Green-Light-darkPanel
+
+Window Manager -> Style - > PRO-dark-XFCE-4.14
+
+Settings -> Settings Editor -> xfwm4 -> button_layout -> CMHS|O [Close, Maximise, Minimise, in that order]
+                            -> xsettings -> FontName -> Sans 9
+
+Add an 'App Finder' using Rofi:
+
+yes | sudo apt install rofi
+# Settings -> Keyboard -> Application Shortcut -> Add
+# rofi -combi-modi window,drun,ssh -theme solarized -font "hack 10" -show combi -icon -theme "papyrus" -show-icons
+# SUPER (WINDOWS) + SPACE
+# Additional 'rofi' themes:
+# rofi -combi-modi window,drun,ssh -theme Arc-Dark -font "hack 10" -show combi -icon -show-icons
+# rofi -combi-modi window,drun,ssh -theme arthur -font "hack 25" -show combi -icon -show-icons -icon-size 35
+# rofi -combi-modi window,drun,ssh -theme docu -font "hack 10" -show combi -icon -show-icons
+# rofi -combi-modi window,drun,ssh -theme solarized -font "hack 12" -show combi -icon-theme "papyrus" -show-icons -icon-size 16
+# rofi-theme-selector
+
+Your desktop should get an exquisite look at this point.
+
+Install some Command-line tools.
+
+yes | sudo apt install neofetch
+yes | sudo apt install htop
+
+
+Audio Output (Line-out):
+Whisker Menu -> Settings -> Settings Manager ->
+-> [Hardware [Category]] ->
+-> PulseAudio Volume Control ->
+-> Port: [Drop down menu] Line Out (plugged in)
+
+Disable Sleep:
+Disabling sleep is important because you might not get access to running applications once the screen gets locked after a certain duration of inactivity in Debian XFCE.
+Caffeine Indicator did not solve the problem.
+
+Whisker Menu -> Settings -> Settings Manager ->
+-> [Hardware [Category]] ->
+-> Power Management ->
+-> General [TAB] When the power button is pressed: Ask. The rest should be set to "Do nothing".
+-> System [TAB] System sleep mode: Suspend. When inactive for: Never. {Remember, Suspend + Never}.
+-> Display [TAB] -> Display Power Management -> Off.
+-> Security [TAB] -> Automatically lock the session: Never. Lock screen when the system is going to sleep [checked].
+
+
+------Keyboard shortcuts to increase or decrease volume.-------------------------------------------------
+https://unix.stackexchange.com/questions/342554/how-to-enable-my-keyboards-volume-keys-in-xfce/412926#412926
+https://unix.stackexchange.com/questions/355665/how-to-increase-or-decrease-volume-in-xfce-with-keyboard-shortcuts
+
+Settings->Keyboard->Application Shortcuts and bind
+the volume up and volume down keys
+
+For PulseAudio:
+
+edited Jul 27, 2022 at 1:03
+ZiyadCodes
+
+answered Dec 25, 2017 at 9:58
+Sebastian
+
+req: xfce4-pulseaudio-plugin
+req: You'll need a keyboard with a Numeric Key Panel (Number Dial Keys).
+
+# raise volume by each 5%
+pactl -- set-sink-volume @DEFAULT_SINK@ +5%
+# WINDOWS s +
+# Will show: Super+KP +
+
+# reduce volume by each 5%
+pactl set-sink-volume @DEFAULT_SINK@ -5%
+# WINDOWS s -
+# Will show: Super+KP -
+
+# mute/unmute audio
+pactl set-sink-mute @DEFAULT_SINK@ toggle
+# WINDOWS s .
+# Will show: Super+KP .
+-------------------------------------------------------------------------
+
+
+Snap and Flatpak:
+Synaptic Package Manager:
+yes | sudo apt install synaptic
+Install GNOME Software:
+yes | sudo apt install gnome-software
+
+Snap:
+yes | sudo apt update && sudo apt upgrade
+yes | sudo apt install snapd
+yes | sudo snap install core
+yes | sudo snap install snap-store
+Update Snaps:
+snap refresh --list
+sudo snap refresh
+
+# add '/snap/bin' to '$PATH'
+# https://askubuntu.com/questions/965599/where-is-the-install-location-for-the-snap-download-tool
+# .bashrc or .bash_aliases
+export PATH="$PATH:/snap/bin/"
+# ------------------------------------------------------------------------------
+Flatpak:
+*** Install Flatpak as root: ***
+sudo su root
+yes | sudo apt install flatpak
+yes | sudo apt install gnome-software-plugin-flatpak
+yes | flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+Exit su:
+exit
+sudo reboot now
+Update Flatpak Apps:
+flatpak update
+
+Flatpak Example:
+Install MS Windows layer translator, Bottle from Flatpak:
+flatpak install flathub com.usebottles.bottles
+flatpak run com.usebottles.bottles
+
+Uninstall a flatpak app:
+https://ubuntuhandbook.org/index.php/2021/06/manage-flatpak-apps-ubuntu/
+flatpak list --app
+Or,
+flatpak list --columns=application --app
+flatpak uninstall --delete-data app-id
+Ex: flatpak uninstall --delete-data com.github.dail8859.NotepadNext
+
+Remove Unused Flatpak Runtimes: https://www.linuxuprising.com/2019/02/how-to-remove-unused-flatpak-runtimes.html
+flatpak uninstall --unused
+
+Install a Firewall:
+yes | sudo apt install gufw
+
+Install an Antivirus:
+sudo apt install chkrootkit
+
+sudo nano /etc/chkrootkit.conf
+
+RUN_DAILY="true"
+USERNAME=$(whoami)
+
+Usage (you do not have to scan immediately): sudo chkrootkit >> "/home/$USERNAME/chkrootkit-report.txt"
+
+Install a RootKit Buster:
+
+sudo apt install rkhunter
+sudo rkhunter --propupd
+sudo rkhunter --update
+
+Usage (you do not have to scan immediately): sudo rkhunter --check --sk --report-warnings-only >> "/home/$USERNAME/rkhunter-report.txt"
+
+Install System Restore/Maintenance Tools:
+# Network Time Protocol daemon/utilities
+sudo apt install ntp
+# tool for selecting tasks
+sudo apt install tasksel
+# Partition Manager
+sudo apt install gparted
+sudo apt install gnome-disk-utility
+# Volume/Drive/Container Encryption
+## https://www.cyberciti.biz/security/howto-linux-hard-disk-encryption-with-luks-cryptsetup-command/
+## http://security.stackexchange.com/questions/4590/ddg#4592
+sudo apt install gnome-disk-utility
+sudo apt install zulucrypt-gui zulucrypt-cli zulumount-gui libzulucrypt-plugins
+sudo apt install pmount
+sudo apt install luckyluks
+sudo apt install cryptsetup cryptmount cryptsetup-bin cryptsetup-initramfs cryptsetup-nuke-password
+# File Sync
+sudo apt install rsync
+sudo apt install grsync
+# System Restore
+sudo apt install timeshift
+# Load Program Faster while launching for the second time
+sudo apt install preload
+# seahorse: GUI Keyring Manager
+# https://mexpolk.wordpress.com/2008/02/06/ubuntu-change-default-keyring-password/
+sudo apt install seahorse
+# Reduce Eyestrain
+sudo apt install redshift-gtk
+# Prevent Screen from falling asleep
+#sudo apt install caffeine
+# Command-line system info tool
+sudo apt install hardinfo
+# New hardware (firmware)
+sudo update-initramfs -u
+sudo apt-get install apt-file
+sudo apt-file update
+# Hardware changes
+dmesg | grep firmware
+apt-file search <firmware-file-name>
+# The Fish Shell
+sudo apt install fish
+# Power management utility for laptops.
+sudo apt install tlp
+yes | sudo apt install tlp-rdw
+# Set Up Bluetooth
+# https://www.howtogeek.com/829360/how-to-set-up-bluetooth-on-linux/
+sudo apt install bluetooth bluemon bluez blueman
+sudo systemctl enable bluetooth.service
+sudo systemctl start bluetooth.service
+rfkill unblock bluetooth
+
+You might be interested in the following:
+(You'll install these utilities for convenience anyway)
+
+# ---------
+# 9 AMAZING COMMAND LINE TOOLS for Linux
+# https://youtu.be/kFh1acsQ8DQ
+
+# Install OH-MY-BASH:
+sudo apt install curl git git-lfs fish -y
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+
+# Change the theme: .bashrc -> Uncomment:
+
+# OSH_THEME="powerline-plain"
+# OSH_THEME="powerline"
+## OSH_THEME="brunton"
+## OSH_THEME="kitsune"
+# OSH_THEME="mairan"
+# OSH_THEME="rr"
+
+source ~/.bashrc
+
+# git clone https://github.com/wting/autojump.git
+# cd autojump
+# python3 install.py
+# cd ~/
+# echo "[[ -s $HOME/.autojump/etc/profile.d/autojump.sh ]] && source $HOME/.autojump/etc/profile.d/autojump.sh" >> ~/.bashrc
+# https://www.cyberciti.biz/faq/add-bash-auto-completion-in-ubuntu-linux/
+sudo apt install bash-completion -y
+echo "source /etc/profile.d/bash_completion.sh" >> ~/.bashrc
+
+# autojump
+# https://github.com/wting/autojump.git
+sudo apt install autojump
+sudo apt install fzf
+echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc
+source ~/.bashrc
+# https://www.tecmint.com/autojump-a-quickest-way-to-navigate-linux-filesystem/1/
+# =======================================================
+# Install OH-MY-FISH (instructions): ====================
+# git clone https://github.com/oh-my-fish/oh-my-fish
+# Install manually:
+# cd oh-my-fish
+# bin/install --offline
+
+
+# Or, (OMF:- OH-MY-FISH)
+# https://github.com/oh-my-fish/oh-my-fish
+sudo apt install curl git fish -y
+curl -L https://get.oh-my.fish | fish
+# fish
+# Theming:
+# omf list
+# omf theme
+# omf install bobthefish
+# omf install agnoster
+# omf reload
+
+
+# tldr
+# https://github.com/tldr-pages/tldr.git
+sudo apt install python3-pip -y
+pipx install tldr
+# ---------
+sudo apt install libfuse2
+sudo apt install psensor
+sudo apt install transmission
+sudo apt install surf
+# GoldenDict Dictionary DB Reader
+# Solve GoldenDict's High CPU usage problem.
+# http://goldendict.org/forum/viewtopic.php?f=4&t=2830
+# Edit -> Preferences > Full-text search tab ->
+# -> "Allow full-text search for:" option is enabled (default option) ->
+# -> Disable.
+# sudo apt install goldendict # Install Flatpak
+# flatpak install flathub org.goldendict.GoldenDict
+#
+# Goldendict alternative
+# sudo apt install stardict
+# See shell/stardict.txt for details.
+#
+# A cross-platform dictionary similar to Wordweb
+sudo apt install artha
+sudo apt install bzip2
+sudo apt install tar
+sudo apt install unrar
+sudo apt install rar
+sudo apt install xz-utils
+sudo apt install lrzip
+sudo apt install pixz
+sudo apt install wmctrl
+sudo apt install nscd
+sudo apt install xclip
+sudo apt install uget
+sudo apt install aria2
+sudo apt install xarchiver
+sudo apt install thunar-archive-plugin
+sudo apt install wavemon
+# Monitor the status of an 802.11 wireless ethernet link.
+sudo apt install wmwave
+# Description: WiFi Share and Connect with QR.
+sudo apt install wifi-qr
+# Launcher.
+sudo apt install rofi
+# Description: graphical wireless scanner.
+sudo apt install linssid
+# Screenshot Utility.
+sudo apt install flameshot
+# Defrag NTFS Volumes.
+sudo apt install ntfs-3g
+
+# Download Manager programs
+sudo apt install uget
+
+Basic build tools you'll need:
+
+sudo apt install build-essential
+sudo apt install patch
+sudo apt install make
+sudo apt install bear
+sudo apt install cmake
+sudo apt install diffutils
+
+sudo apt install libomp-dev
+sudo apt install curl
+sudo apt install python3-pip
+python -m pip install --upgrade pip
+sudo apt install pipx
+
+sudo apt install git git-lfs gitk git-gui
+sudo apt install unzip
+# MATE archive manager. Works in XFCE
+sudo apt install engrampa engrampa-common
+# Generic archive manager. Works in XFCE
+sudo apt install xarchiver
+sudo apt install thunar-archive-plugin
+sudo apt install wget curl
+
+sudo apt install notepadqq
+
+sudo apt update
+sudo apt list --upgradable
+sudo apt upgrade
+sudo apt update
+sudo apt install -f
+sudo apt install nodejs
+sudo apt install jq
+# Description: package manager for Node.js
+# (npm: Unmet dependencies)
+
+sudo apt install npm
+
+# Update Node.js with NPM (Node Package Manager)
+# https://phoenixnap.com/kb/update-node-js-version
+
+sudo apt install npm
+npm cache clean -f
+sudo npm install -g n
+sudo n stable
+
+How To Compare Two Directories on Linux:
+https://www.baeldung.com/linux/compare-two-directories
+https://askubuntu.com/questions/651166/best-alternative-for-winmerge#661055
+
+sudo apt install meld
+sudo apt install diffuse
+sudo apt install kdiff3-qt or flatpak install org.kde.kdiff3 (cumbersome)
+# sudo apt install xxdiff (not easy to use or feature-rich)
+# sudo apt install fldiff (not easy to use or feature-rich)
+
+Command-line file manager:
+sudo apt install mc
+
+You might be interested in the following also:
+
+sudo apt install llvm
+sudo apt install clang
+sudo apt install clangd
+sudo apt install clang-tidy
+sudo apt install clang-tools
+sudo apt install lld
+pipx install flawfinder
+pipx install lizard
+https://github.com/joeyespo/grip
+Render local readme files before sending off to GitHub.
+pipx install grip
+# https://github.com/friendlyanon/cmake-init
+pipx install cmake-init
+# https://github.com/gni/offvsix
+# offvsix: Offline Visual Studio Code Extension Downloader
+pipx install offvsix
+
+# Bash Language Server
+# https://github.com/bash-lsp/bash-language-server.git
+sudo npm i -g bash-language-server
+bash-language-server --help
+
+# Description: blackbox testing of Unix command line programs
+# cmdtest black box tests Unix command line tools. Roughly, it is given a
+# script, its input files, and its expected output files. cmdtest runs
+# the script, and checks the output is as expected.
+sudo apt install cmdtest
+# pnpm package manager
+# https://pnpm.io/installation
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+# other essential development utilities
+sudo apt install cdecl
+sudo apt install cutils
+sudo apt install kitty
+sudo apt install sakura
+# sudo apt install gnome-terminal
+sudo apt install tree
+sudo apt install mc
+sudo apt install xclip
+sudo apt install vim-gtk3
+sudo apt install kate
+sudo apt install cppcheck
+sudo apt install cppcheck-gui
+sudo apt install splint
+sudo apt install cmake cmake-gui
+sudo apt install wget
+sudo apt install unzip
+sudo apt install git
+sudo apt install git-lfs
+
+# https://softwarerecs.stackexchange.com/questions/30351/visualizing-git-diff-linux#30352
+# gitk & git-gui
+# Both can show results graphically when launched from the directory
+# containing .git folder. These are the simplest alternatives
+# to dealing with the command-line diff/merge/commit/stage/push tools.
+# Can be supplementary utilities even when a CUI is preferred over the GUI.
+
+sudo apt install gitk
+sudo apt install git-gui
+sudo apt install giggle
+
+# GUI frontends for Git Version Control System:
+# Gitg is pretty barebone at the moment. Git Cola comes packed with all the
+# bells and whistles needed to control Git from a Graphical User Interface,
+# however, it's a little slower. There are many Git GUI frontends out there,
+# of them, Git Cola holds nothing back from anyone,
+# from a more freedom-friendly perspective.
+# For example, there's a free version of a Git GUI client that doesn't allow
+# free users to deal with private repositories. Git Cola is neatly comparable to
+# advanced GUI clients of the Git VCS like Sourcetree, GitKraken, SmartGit,
+# GitHub Desktop, Gitbox, Tower and others.
+# --------
+# 'qgit' is another excellent Git GUI frontend. In some aspects, it's
+# more flexible than Git Cola.
+# --------
+# I wouldn't recommend any of the GUI frontends of Git since they all come with
+# some inadequacies, thus, all those Git frontends are not yet ready to fully
+# replace Git's terminal interface.
+# GUI Git programs can be used for viewing code history etc.
+# They can quickly draw an overview of a repository and track the history of
+# changed files at a glance.
+# Install any of the following if you are in absolute need of a GUI Git frontend.
+
+# sudo apt install gitg
+# sudo apt install qgit
+# sudo apt install git-cola
+
+# Flowchart diagram designing program
+# https://wiki.gnome.org/Apps/Dia
+# (Windows) http://dia-installer.de/index.html.en
+# sudo apt install dia
+# Dia2Code is a small utility used to generate code from a Dia diagram
+# http://dia2code.sourceforge.net/index.html
+# sudo apt install dia2code
+
+# Below are some (terminal-based) utilities for adding more
+# functionalities to the existing Git installation
+
+sudo apt install git-extras
+sudo apt install git-flow
+sudo apt install diffutils
+sudo apt install diffstat
+
+# Debuggers, code profilers, memory leak testers, build tools,
+# code formatting, code/directory compare applications and more
+
+sudo apt install ddd
+sudo apt install valgrind
+sudo apt install cgdb
+sudo apt install astyle
+sudo apt install universal-ctags
+sudo apt install autoconf
+sudo apt install pkg-config
+sudo apt install libx11-dev
+sudo apt install libglib2.0-doc
+sudo apt install libtool
+sudo apt install autoproject
+sudo apt install autogen
+sudo apt install autotools-dev
+sudo apt install automake
+sudo apt install m4
+sudo apt install make
+sudo apt install ninja-build
+sudo apt install meld
+# sudo apt install kdiff3 (use the latest flatpak version)
+flatpak install org.kde.kdiff3
+
+# 'fldiff' cannot perform merge operations
+# sudo apt install fldiff
+
+# "kdiff3" and "kompare" both are efficient Diff Tools with advanced features.
+# While "meld" is way too slow and lags most of the time on larger files,
+# it has a rich set of features and it's very easy to use.
+# So, "meld" cannot be discarded easily.
+# And, "fldiff" doesn't allow merging. With "fldiff",
+# you can see the differences, not merge them.
+# "meld" is fine for comparing small files side-by-side,
+# also it has a relatively smaller footprint.
+# Among "kdiff3" and "kompare", "kdiff3" is still a preferred choice of many.
+# "kdiff3" and "kompare" occupy mostly the same amount of storage space.
+# "kompare" is around 110 MB, and "kdiff3" is 96 MB (approx).
+# 'kompare' is slightly clumsy.
+# Only install what you need.
+
+# sudo apt install kdiff3 (use the latest flatpak version)
+flatpak install org.kde.kdiff3
+# sudo apt install kompare
+
+# Markdown to HTML etc.
+sudo apt install markdown
+
+# Text search utilities
+sudo apt install regexxer
+# sudo apt install vizigrep
+sudo apt install searchmonkey
+
+sudo apt install ripgrep ugrep
+# ugrep --help
+
+# PlatformIO ===========================================================
+# CuteCOM: GUI Serial Monitor
+# https://www.pragmaticlinux.com/2021/11/how-to-monitor-the-serial-port-in-linux/
+sudo apt install cutecom
+
+# Req. by PlatformIO CORE CLI
+
+# yes | sudo apt autoremove brltty
+# or,
+sudo apt purge --auto-remove brltty
+
+yes | sudo apt update
+# https://www.pragmaticlinux.com/2021/11/how-to-monitor-the-serial-port-in-linux/
+sudo apt install -y cutecom
+# https://askubuntu.com/questions/786367/setting-up-arduino-uno-ide-on-ubuntu
+# https://askubuntu.com/questions/781571/how-to-identify-devices-connected-to-serial-port
+# https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
+# https://0xsuk.github.io/posts/2022-07-19-how-to-install-ch340-on-ubuntu-22.04/
+sudo apt install -y hwinfo
+sudo apt install -y setserial
+pipx install esptool
+
+# Be the root user if needed,
+# sudo su root and then exit root
+# when you've completed the taks as exit
+# sudo usermod -a -G plugdev $USER
+# sudo usermod -a -G dialout $USER
+# https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html#cmd-device-monitor
+# https://docs.platformio.org/en/latest/core/installation/udev-rules.html
+# curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules | sudo tee /etc/udev/rules.d/99-platformio-udev.rules  && \
+# sudo service udev restart
+# sudo udevadm control --reload-rules
+# sudo udevadm trigger
+# sudo usermod -a -G dialout $USER
+# sudo usermod -a -G plugdev $USER
+# sudo reboot
+# sudo chmod a+rw /dev/ttyUSB0
+# sudo chmod a+rw /dev/ttyS0
+# setserial -g /dev/ttyS0
+# setserial -g /dev/ttyS[0123]
+# sudo sysctl kernel.dmesg_restrict=0
+# sudo reboot
+# echo "ls -l /dev/ttyUSB* /dev/ttyACM* ..."
+# ls -l /dev/ttyUSB* /dev/ttyACM*
+# ls -l /dev/ttyUSB* /dev/ttyACM*
+# ls: cannot access '/dev/ttyACM*': No such file or directory
+# crw-rw-rw- 1 root dialout 188, 0 Mar 20 01:08  /dev/ttyUSB0
+# hwinfo --short
+#
+#                        Serial controller
+#   /dev/ttyUSB0         QinHeng Electronics HL-340 USB-Serial adapter
+# echo "dmesg | egrep --color 'serial|ttyS' ..."
+# dmesg | egrep --color 'serial|ttyS'
+# echo "dmesg | grep tty ..."
+# dmesg | grep tty
+# echo "dmesg | tail -f ..."
+# dmesg | tail -f
+# echo "hwinfo --short ..."
+# hwinfo --short
+# echo "lsusb ..."
+# lsusb
+# echo "ls -l /dev/tty* ..."
+# ls -l /dev/tty*
+# echo "dmesg | grep tty ..."
+# dmesg | grep tty
+######################################################## For PlaltformIO
+
+######################################################## TicTacSync
+# https://sr.ht/~proflutz/TicTacSync/
+# https://tictacsync.org/
+
+sudo apt install sox
+pipx install tictacsync
+pipx upgrade-all
+# tictacsync -v sampleFiles
+########################################################
+
+# GIMP Essentials:
+yes | sudo apt install abr2gbr
+yes | sudo apt install gimp-data
+yes | sudo apt install gimp-data-extras
+yes | sudo apt install gimp-gmic
+yes | sudo apt install gimp-gutenprint
+yes | sudo apt install gimp-help-common
+yes | sudo apt install gimp-help-en-gb
+yes | sudo apt install gimp-lensfun
+yes | sudo apt install gimp-plugin-registry
+yes | sudo apt install gimp-texturize
+yes | sudo apt install gimp-lensfun
+yes | sudo apt install gtkam-gimp
+yes | sudo apt install icc-profiles
+yes | sudo apt install icc-profiles-free
+yes | sudo apt install gegl
+yes | sudo apt install xzgv
+
+# GIMP:
+sudo apt install gimp gimp-data gimp-data-extras gimp-gmic gimp-gutenprint gimp-help-common gimp-help-en-gb gimp-lensfun gimp-plugin-registry gimp-texturize icc-profiles icc-profiles-free gegl gtkam-gimp xzgv
+
+# converter between LibreOffice document formats
+# This package provides a commandline utility which can convert from
+# any document format that LibreOffice can import to any document format
+# it can export. It uses LibreOffice's UNO bindings for non-interactive
+# conversion of documents.
+
+sudo apt install unoconv
+
+Fix Snap-installed packages if you find the launchers missing:
+(Snap app icon doesn't appear in menu)
+https://forums.linuxmint.com/viewtopic.php?t=319827
+#sudo snap install inkscape # Install the AppImage package from the official channel https://inkscape.org/
+snap list
+snap run inkscape
+echo $XDG_DATA_DIRS
+ls -l /var/lib/snapd/desktop/applications
+mkdir ~/.local/share/applications/
+cp /var/lib/snapd/desktop/applications/inkscape_inkscape.desktop ~/.local/share/applications/
+chmod 755 ~/.local/share/applications/inkscape_inkscape.desktop
+# snap
+# add '/snap/bin' to '$PATH'
+# https://askubuntu.com/questions/965599/where-is-the-install-location-for-the-snap-download-tool
+# .bashrc or .bash_aliases
+export PATH="$PATH:/snap/bin/"
+# Snap Packages:
+#sudo snap install inkscape # Install the AppImage package from the official channel https://inkscape.org/
+sudo snap install keepassxc
+sudo snap install vlc
+# sudo snap install kompare
+# Slideshow maker
+# usage snap run kompare .bashrc .bashrc2
+
+# HDMI-2-USB
+# https://snapcraft.io/hdmi-usb-dongle
+sudo snap install hdmi-usb-dongle
+# Usage:
+# sudo snap connect hdmi-usb-dongle:camera
+# sudo snap connect hdmi-usb-dongle:hardware-observe
+# sudo snap connect hdmi-usb-dongle:audio-record
+
+# Webcam
+# https://www.makeuseof.com/best-camera-apps-linux/
+# https://www.linuxlinks.com/webcam/
+sudo apt install cheese
+
+Uninstall a snap package:
+https://askubuntu.com/questions/1130791/how-to-uninstall-a-package-installed-from-snapcraft
+sudo snap remove --purge snapname
+Ex: sudo snap remove --purge kompare
+
+# Flatpak packages
+flatpak install flathub com.github.Eloston.UngoogledChromium
+Choose a search engine from the setting in Chromium.
+Bookmark:
+https://www.google.com/
+https://www.reddit.com/
+Get the latest LibreOffice:
+Uninstall the old LibreOffice that comes with the OS.
+sudo apt purge --auto-remove libreoffice*
+Install the latest flatpak version:
+flatpak install flathub org.libreoffice.LibreOffice
+# A GUI Flatpak App Permission Manager
+# https://www.makeuseof.com/manage-flatpak-permissions-with-flatseal-linux/
+flatpak install flathub com.github.tchx84.Flatseal
+# nomacs - a free, open source image viewer https://github.com/nomacs/nomacs
+flatpak install flathub org.nomacs.ImageLounge
+# Blanket - Listen to ambient sounds (White Noise Generator) https://github.com/rafaelmardojai/blanket
+flatpak install flathub com.rafaelmardojai.Blanket
+# VidCutter - Media Cutter + Joiner
+flatpak install com.ozmartians.VidCutter # Doesn't work with large video files
+# KDE Non-Linear Video Editor: Kdenlive
+Dependencies: sudo apt install frei0r-plugins
+flatpak install flathub org.kde.kdenlive
+Run: flatpak run org.kde.kdenlive
+Or, download Kdenlive AppImage
+# Flowblade: A multitrack non-linear video editor
+flatpak install flathub io.github.jliljebl.Flowblade
+Run: flatpak run io.github.jliljebl.Flowblade
+# Natron - Open-source video compositing software
+flatpak install flathub fr.natron.Natron
+Run: flatpak run fr.natron.Natron
+# Wings 3D - An advanced subdivision modeler
+flatpak install flathub com.wings3d.WINGS
+Run: flatpak run com.wings3d.WINGS
+
+
+The Suckless ST Terminal Emulator basic package:
+sudo apt install stterm
+Or, Build it from the source
+https://github.com/bakkeby/st-flexipatch.git
+
+Terminal Fonts (MUST):
+* Without these fonts, you'll miss the proper console characters and see boxes everywhere.
+sudo apt install fonts-terminus fonts-terminus-otb xfonts-terminus
+sudo apt install xfonts-terminus-dos xfonts-terminus-oblique
+sudo apt install xfonts-mona fonts-firacode fonts-league-mono fonts-agave
+sudo apt install fonts-inconsolata fonts-ricty-diminished
+sudo apt install fonts-jetbrains-mono fonts-anonymous-pro
+sudo apt install fonts-monoid fonts-monoid-halfloose
+sudo apt install fonts-monoid-halftight fonts-monoid-loose fonts-monoid-tight
+sudo apt install fonts-fantasque-sans fonts-hermit fonts-powerline
+# https://github.com/ryanoasis/nerd-fonts
+
+# Bangla/Hindi Support
+apt search bengali
+apt search beng
+apt search hin
+apt search hindi
+https://packages.debian.org/en/stable/fonts-indic
+https://medium.com/the-blog-of-ehsan-nazim/write-bangla-easily-on-debian-9xfce-4470019d6272
+https://askubuntu.com/questions/769391/how-to-fix-bangla-fonts-problem-in-firefox
+https://www.quora.com/How-can-I-install-Hindi-and-other-Indian-language-fonts-on-Kali-Linux
+sudo apt install fonts-indic
+sudo apt install ibus ibus-m17n m17n-db ibus-gtk
+sudo apt install fonts-beng fonts-beng-extra fonts-lohit-beng-bengali firefox-esr-l10n-bn
+Hindi:
+sudo apt install fonts-indic firefox-esr-l10n-hi-in fonts-deva-extra fonts-gargi fonts-lohit-deva
+
+Dictionary support for gnu-aspell (if req.):
+sudo apt install aspell-bn
+sudo apt install aspell-hi
+
+/usr/bin/ibus-daemon -d
+Add these lines to either '.bashrc' or '.bash_aliases'
+----------------------------
+export GTK_IM_MODULE=ibus
+export XMODIFIERS=@im=ibus
+export QT_IM_MODULE=ibus
+----------------------------
+IBus Preferences -> Keyboard Shortcuts -> Next Input Method
+<Control><Super>F1
+Bangla Probhat India
+Session and Startup -> Application Autostart -> Add -> Command:
+/usr/bin/ibus-daemon -d
+----------------------------
+Name: IBus daemon
+Description: Start the IBus daemon when Xfce starts
+Command: /usr/bin/ibus-daemon -d
+----------------------------
+Install Fonts in Debian:
+https://vitux.com/how-to-install-custom-fonts-in-debian/
+sudo apt update && sudo apt -y install font-manager
+If you prefer Avro:
+sudo apt install ibus-avro
+Restart the machine.
+
+# Zoom and MS-Teams #
+Zoom.AppImage (if you need it for work):
+https://github.com/probonopd/Zoom.AppImage/releases (it's what I prefer)
+https://flathub.org/apps/us.zoom.Zoom (official)
+flatpak install flathub us.zoom.Zoom
+https://snapcraft.io/zoom-client
+
+Teams App (if you need it for work):
+https://snapcraft.io/teams-for-linux
+sudo snap install teams-for-linux
+https://flathub.org/apps/com.github.IsmaelMartinez.teams_for_linux
+flatpak install flathub com.github.IsmaelMartinez.teams_for_linux
+#                                                    # Zoom and MS-Teams
+
+# Duplicate File Finder
+sudo snap install fslint-unofficial
+# snap list
+# cp /var/lib/snapd/desktop/applications/fslint-unofficial_fslint-unofficial.desktop ~/.local/share/applications/
+# chmod 755 ~/.local/share/applications/fslint-unofficial_fslint-unofficial.desktop
+
+--------------------------------------------------------------------------------
+All flatpack and snap apps:
+
+flatpak list --columns=application --app
+
+Application ID
+X                              app.zen_browser.zen [Nice application, but it's no longer being utilised.]
+com.github.tchx84.Flatseal
+com.github.zocker_160.SyncThingy
+com.rafaelmardojai.Blanket
+com.wings3d.WINGS
+fr.handbrake.ghb
+io.github.Qalculate
+X                               io.github.jliljebl.Flowblade [Shotcut is the most commonly used video editing application on my computer, while Flowblade remains unused.]
+org.kde.kdenlive
+org.libreoffice.LibreOffice
+org.nomacs.ImageLounge
+
+snap list
+
+Name:
+fslint-unofficial                      v0.1.14                     73     latest/stable  tgagor          -
+hdmi-usb-dongle                        0.1                         33     latest/stable  ogra            -
+keepassxc                              2.7.8                       1785   latest/stable  keepassxreboot  -
+teams-for-linux                        1.12.5                      730    latest/stable  ismaelmartinez  -
+vlc                                    3.0.20-1-g2617de71b6        3777   latest/stable  videolan**      -
+
+
+--------------------------------------------------------------------------------
+
+================================================================================
+===================================== IMPORTANT ================================
+For more packages:
+
+Open the file '02_debian_minimal_packages.sh'.
+
+Comment out/delete the lines listing packages you
+don't need and write your preferred list of packages.
+
+Run the BASH Script '02_debian_minimal_packages.sh'.
+
+chmod +x 02_debian_minimal_packages.sh
+./02_debian_minimal_packages.sh
+
+
+Keep a backup of the modified file since you'll
+need it at the time of reformatting your system.
+
+================================================================================
+
+
+
+########################################################################
+Tips and Tricks:
+
+How to List Installed Packages on Debian:
+https://linuxize.com/post/how-to-list-installed-packages-on-debian/
+
+sudo dpkg-query -f '${binary:Package}\n' -W > packages_list.txt
+
+Now that you have the list,
+you can install the same packages
+on your new server with:
+
+sudo xargs -a packages_list.txt apt install
+########################################################################
+
+# sudo usermod -a -G plugdev $USER  && \
+# sudo usermod -a -G dialout $USER && \
+# https://docs.platformio.org/en/latest/core/userguide/device/cmd_monitor.html#cmd-device-monitor
+# https://docs.platformio.org/en/latest/core/installation/udev-rules.html
+# curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules | sudo tee /etc/udev/rules.d/99-platformio-udev.rules  && \
+# sudo service udev restart && \
+# sudo udevadm control --reload-rules && \
+# sudo udevadm trigger && \
+# sudo usermod -a -G dialout $USER && \
+# sudo usermod -a -G plugdev $USER && \
+# sudo reboot
+# sudo chmod a+rw /dev/ttyUSB0 && \
+# sudo chmod a+rw /dev/ttyS0 && \
+# setserial -g /dev/ttyS0 && \
+# setserial -g /dev/ttyS[0123] && \
+# sudo sysctl kernel.dmesg_restrict=0 && \
+# sudo reboot
+# echo "ls -l /dev/ttyUSB* /dev/ttyACM* ..." && \
+# ls -l /dev/ttyUSB* /dev/ttyACM* && \
+# ls -l /dev/ttyUSB* /dev/ttyACM*
+# ls: cannot access '/dev/ttyACM*': No such file or directory
+# crw-rw-rw- 1 root dialout 188, 0 Mar 20 01:08  /dev/ttyUSB0
+# hwinfo --short
+#
+#                        Serial controller
+#   /dev/ttyUSB0         QinHeng Electronics HL-340 USB-Serial adapter
+# echo "dmesg | egrep --color 'serial|ttyS' ..." && \
+# dmesg | egrep --color 'serial|ttyS' && \
+# echo "dmesg | grep tty ..." && \
+# dmesg | grep tty && \
+# echo "dmesg | tail -f ..." && \
+# dmesg | tail -f && \
+# echo "hwinfo --short ..." && \
+# hwinfo --short && \
+# echo "lsusb ..." && \
+# lsusb && \
+# echo "ls -l /dev/tty* ..." && \
+# ls -l /dev/tty* && \
+# echo "dmesg | grep tty ..." && \
+# dmesg | grep tty \
+#                                                  For PlaltformIO
+
+# =================================================================
+# developer utilities (END)
+# =================================================================
