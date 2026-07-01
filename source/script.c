@@ -22,6 +22,7 @@
 #include <fcntl.h>
 
 #include "sf_c.h"
+#include "runner.h"
 
 #define VERSION "2" /* defines a constant string called "VERSION" with the value 1 */
 #define NO_OF_ARGS 2 /* the exact no. of command-line arguments the program takes */
@@ -447,7 +448,6 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
 typedef void (*installer_fn)(void);
 
 
-
 /*
    Install Flatpak if it is not already installed.
 */
@@ -768,7 +768,7 @@ static void install_rust_programs(void) {
     char *const argv[] = {
       "cargo",
       "install",
-      rust_packages[i],
+      (char *)rust_packages[i],
       NULL
     };
     runner_result result = runner_run(argv);
@@ -781,53 +781,91 @@ static void install_rust_programs(void) {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void stage_flatpak(void) {
-  log_section("FLATPAK");
-  /* TODO */
+/* GitHub installer functions */
+static void install_fastfetch(void) {
+  log_section("FASTFETCH");
+  printf("Fastfetch installation not yet implemented.\n");
 }
 
-static void stage_snap(void) {
-  log_section("SNAP");
-  /* TODO */
+static void install_fzf(void) {
+  log_section("FZF");
+  printf("fzf installation not yet implemented.\n");
 }
 
-static void stage_pnpm(void) {
-  log_section("PNPM");
-  /* TODO */
+static void install_yazi(void) {
+  log_section("YAZI");
+  printf("Yazi installation not yet implemented.\n");
 }
 
-static void stage_fonts(void) {
+static void install_lazygit(void) {
+  log_section("LAZYGIT");
+  printf("Lazygit installation not yet implemented.\n");
+}
+
+static void install_neovim(void) {
+  log_section("NEOVIM");
+  printf("Neovim installation not yet implemented.\n");
+}
+
+/* Node package installer functions */
+static void install_prettier(void) {
+  log_section("PRETTIER");
+  printf("Prettier installation not yet implemented.\n");
+}
+
+static void install_typescript(void) {
+  log_section("TYPESCRIPT");
+  printf("TypeScript installation not yet implemented.\n");
+}
+
+static void install_eslint(void) {
+  log_section("ESLINT");
+  printf("ESLint installation not yet implemented.\n");
+}
+
+/* Rust package installer functions */
+static void install_bat(void) {
+  log_section("BAT");
+  printf("Bat installation not yet implemented.\n");
+}
+
+static void install_eza(void) {
+  log_section("EZA");
+  printf("eza installation not yet implemented.\n");
+}
+
+static void install_fd(void) {
+  log_section("FD");
+  printf("fd installation not yet implemented.\n");
+}
+
+static void install_ripgrep(void) {
+  log_section("RIPGREP");
+  printf("ripgrep installation not yet implemented.\n");
+}
+
+/* Utility functions */
+static void install_fonts(void) {
   log_section("FONTS");
-  /* TODO */
+  printf("Font installation not yet implemented.\n");
 }
 
-static void stage_dotfiles(void) {
+static void configure_dotfiles(void) {
   log_section("DOTFILES");
-  /* TODO */
+  printf("Dotfile configuration not yet implemented.\n");
 }
 
-static void stage_cleanup(void) {
-  log_section("CLEANUP");
-  /* TODO */
+static void cleanup_build_directories(void) {
+  log_section("CLEANUP BUILD DIRS");
+  printf("Build directory cleanup not yet implemented.\n");
 }
 
+static void remove_unused_packages(void) {
+  log_section("REMOVE UNUSED PACKAGES");
+  printf("Unused package removal not yet implemented.\n");
+}
+
+/* Installer arrays */
 static const installer_fn github_installers[] = {
   install_fastfetch,
   install_fzf,
@@ -836,14 +874,6 @@ static const installer_fn github_installers[] = {
   install_neovim,
   NULL
 };
-
-static void stage_github(void) {
-  puts("\n=== Building GitHub projects ===");
-
-  for(size_t i = 0; github_installers[i] != NULL; ++i) {
-    github_installers[i]();
-  }
-}
 
 static const installer_fn node_installers[] = {
   install_pnpm,
@@ -861,6 +891,7 @@ static const installer_fn rust_installers[] = {
   NULL
 };
 
+/* Stage functions */
 static void stage_flatpak(void) {
   log_section("FLATPAK");
   install_flatpak();
@@ -877,6 +908,14 @@ static void stage_pnpm(void) {
   install_pnpm();
 }
 
+static void stage_github(void) {
+  log_section("GITHUB PROJECTS");
+
+  for(size_t i = 0; github_installers[i] != NULL; ++i) {
+    github_installers[i]();
+  }
+}
+
 static void stage_node(void) {
   log_section("NODE PACKAGES");
 
@@ -891,14 +930,6 @@ static void stage_rust(void) {
 
   for(size_t i = 0; rust_installers[i] != NULL; ++i) {
     rust_installers[i]();
-  }
-}
-
-static void stage_github(void) {
-  log_section("GITHUB PROJECTS");
-
-  for(size_t i = 0; github_installers[i] != NULL; ++i) {
-    github_installers[i]();
   }
 }
 
