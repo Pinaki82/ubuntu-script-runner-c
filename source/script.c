@@ -48,6 +48,19 @@ void remove_duplicate_lines(const char *filepath);
 void log_section(const char *text);
 void log_failed_package(const char *pkg);
 void package_manager(char *package_manager_name);
+///////////////////////////////////////////////////
+static void stage_prepare(void);
+static void stage_system_packages(void);
+static void stage_flatpak(void);
+static void stage_snap(void);
+static void stage_pnpm(void);
+static void stage_node(void);
+static void stage_rust(void);
+static void stage_github(void);
+static void stage_fonts(void);
+static void stage_dotfiles(void);
+static void stage_cleanup(void);
+///////////////////////////////////////////////////
 void install_command(char *command_2_install_apps);
 void simulate_flag(char *flag);
 int renewsys(void);
@@ -424,6 +437,504 @@ void package_manager(char *package_manager_name) { // apt, yum, dnf, apx etc.
 
   /*(void)printf("package_manager ran successfully!\n");*/
 }
+
+/*
+   ============================================================================
+   Installation stages for non-APT software
+   ============================================================================
+*/
+
+typedef void (*installer_fn)(void);
+
+
+
+/*
+   Install Flatpak if it is not already installed.
+*/
+static void install_flatpak(void) {
+  log_section("INSTALL FLATPAK");
+
+  if(runner_command_exists("flatpak")) {
+    printf("Flatpak is already installed.\n");
+    return;
+  }
+
+  char *const argv[] = {
+    "sudo",
+    "apt",
+    "install",
+    "-y",
+    "flatpak",
+    NULL
+  };
+  runner_result result = runner_run(argv);
+
+  if(!result.success) {
+    fprintf(stderr, "Failed to install Flatpak.\n");
+    return;
+  }
+
+  printf("Flatpak installed successfully.\n");
+}
+
+/*
+   Flatpak packages to install.
+
+   Format:
+     "remote application-id"
+*/
+static const char *flatpak_packages[] = {
+  "flathub com.github.tchx84.Flatseal",
+  "flathub org.mozilla.firefox",
+  "flathub com.visualstudio.code",
+  NULL
+};
+
+static void install_flatpak_packages(void) {
+  log_section("INSTALL FLATPAK PACKAGES");
+
+  if(!runner_command_exists("flatpak")) {
+    printf("Flatpak is not installed.\n");
+    return;
+  }
+
+  /*
+     Ensure Flathub exists.
+  */
+  {
+    char *const argv[] = {
+      "flatpak",
+      "remote-add",
+      "--if-not-exists",
+      "flathub",
+      "https://dl.flathub.org/repo/flathub.flatpakrepo",
+      NULL
+    };
+    runner_run(argv);
+  }
+
+  for(size_t i = 0; flatpak_packages[i] != NULL; ++i) {
+    char remote[64];
+    char appid[256];
+
+    if(sscanf(flatpak_packages[i],
+              "%63s %255s",
+              remote,
+              appid) != 2) {
+      continue;
+    }
+
+    char *const argv[] = {
+      "flatpak",
+      "install",
+      "-y",
+      remote,
+      appid,
+      NULL
+    };
+    printf("Installing Flatpak package: %s\n", appid);
+    runner_run(argv);
+  }
+}
+
+/*
+   ============================================================================
+   Install Snap packages
+   ============================================================================
+*/
+
+static const char *snap_packages[] = {
+  /* Add packages here. */
+  /* "code", */
+  /* "postman", */
+  /* "spotify", */
+
+  NULL
+};
+
+static void install_snap_packages(void) {
+  log_section("SNAP PACKAGES");
+
+  if(!runner_command_exists("snap")) {
+    printf("Snap is not installed. Skipping Snap packages.\n");
+    return;
+  }
+
+  for(size_t i = 0; snap_packages[i] != NULL; ++i) {
+    printf("Installing Snap package: %s\n", snap_packages[i]);
+    char *const argv[] = {
+      "sudo",
+      "snap",
+      "install",
+      (char *)snap_packages[i],
+      NULL
+    };
+    runner_result result = runner_run(argv);
+
+    if(!result.success) {
+      fprintf(stderr,
+              "Failed to install Snap package '%s'.\n",
+              snap_packages[i]);
+    }
+  }
+}
+
+/*
+   ============================================================================
+   Install pnpm
+   ============================================================================
+*/
+
+static void install_pnpm(void) {
+  log_section("PNPM");
+
+  if(runner_command_exists("pnpm")) {
+    printf("pnpm is already installed.\n");
+    return;
+  }
+
+  if(!runner_command_exists("npm")) {
+    fprintf(stderr,
+            "npm is not installed. Cannot install pnpm.\n");
+    return;
+  }
+
+  printf("Installing pnpm...\n");
+  char *const argv[] = {
+    "npm",
+    "install",
+    "--global",
+    "pnpm",
+    NULL
+  };
+  runner_result result = runner_run(argv);
+
+  if(!result.success) {
+    fprintf(stderr,
+            "Failed to install pnpm.\n");
+    return;
+  }
+
+  if(runner_command_exists("pnpm")) {
+    printf("pnpm installed successfully.\n");
+  }
+
+  else
+    fprintf(stderr,
+            "pnpm installation completed, but pnpm was not found in PATH.\n");
+}
+
+/*
+   ============================================================================
+   Install global Node.js packages
+   ============================================================================
+*/
+
+static const char *node_packages[] = {
+  /* Add packages here. */
+  "prettier",
+  "typescript",
+  "eslint",
+
+  NULL
+};
+
+static void install_node_packages(void) {
+  log_section("NODE PACKAGES");
+
+  if(!runner_command_exists("npm")) {
+    fprintf(stderr,
+            "npm is not installed. Skipping Node packages.\n");
+    return;
+  }
+
+  for(size_t i = 0; node_packages[i] != NULL; ++i) {
+    printf("Installing Node package: %s\n",
+           node_packages[i]);
+    char *const argv[] = {
+      "npm",
+      "install",
+      "--global",
+      (char *)node_packages[i],
+      NULL
+    };
+    runner_result result = runner_run(argv);
+
+    if(!result.success) {
+      fprintf(stderr,
+              "Failed to install '%s'.\n",
+              node_packages[i]);
+    }
+  }
+}
+
+/*
+   ============================================================================
+   Install Rust toolchain
+   ============================================================================
+*/
+
+static void install_rust_toolchain(void) {
+  log_section("RUST TOOLCHAIN");
+
+  if(runner_command_exists("cargo") &&
+     runner_command_exists("rustc")) {
+    printf("Rust toolchain is already installed.\n");
+    return;
+  }
+
+  if(!runner_command_exists("curl")) {
+    fprintf(stderr,
+            "curl is not installed. Cannot install Rust.\n");
+    return;
+  }
+
+  printf("Installing Rust toolchain...\n");
+  runner_result result =
+          runner_shell(
+                  "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y");
+
+  if(!result.success) {
+    fprintf(stderr,
+            "Failed to install the Rust toolchain.\n");
+    return;
+  }
+
+  /*
+     Make Cargo available to this process.
+     Future login shells will source ~/.cargo/env automatically.
+  */
+  {
+    const char *home = getenv("HOME");
+
+    if(home != NULL) {
+      char cargo_bin[PATH_MAX];
+      snprintf(cargo_bin,
+               sizeof(cargo_bin),
+               "%s/.cargo/bin",
+               home);
+      const char *old_path = getenv("PATH");
+
+      if(old_path != NULL) {
+        char new_path[8192];
+        snprintf(new_path,
+                 sizeof(new_path),
+                 "%s:%s",
+                 cargo_bin,
+                 old_path);
+        setenv("PATH", new_path, 1);
+      }
+    }
+  }
+
+  if(runner_command_exists("cargo")) {
+    printf("Rust toolchain installed successfully.\n");
+  }
+
+  else
+    fprintf(stderr,
+            "Rust installation finished, but Cargo is not available in PATH.\n");
+}
+
+/*
+   ============================================================================
+   Install Rust programs
+   ============================================================================
+*/
+
+static const char *rust_packages[] = {
+  /* Add Cargo packages here. */
+
+  "bat",
+  "eza",
+  "fd-find",
+  "ripgrep",
+
+  NULL
+};
+
+static void install_rust_programs(void) {
+  log_section("RUST PACKAGES");
+
+  if(!runner_command_exists("cargo")) {
+    fprintf(stderr,
+            "Cargo is not installed. Skipping Rust packages.\n");
+    return;
+  }
+
+  for(size_t i = 0; rust_packages[i] != NULL; ++i) {
+    printf("Installing Cargo package: %s\n",
+           rust_packages[i]);
+    char *const argv[] = {
+      "cargo",
+      "install",
+      rust_packages[i],
+      NULL
+    };
+    runner_result result = runner_run(argv);
+
+    if(!result.success) {
+      fprintf(stderr,
+              "Failed to install Cargo package '%s'.\n",
+              rust_packages[i]);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static void stage_flatpak(void) {
+  log_section("FLATPAK");
+  /* TODO */
+}
+
+static void stage_snap(void) {
+  log_section("SNAP");
+  /* TODO */
+}
+
+static void stage_pnpm(void) {
+  log_section("PNPM");
+  /* TODO */
+}
+
+static void stage_fonts(void) {
+  log_section("FONTS");
+  /* TODO */
+}
+
+static void stage_dotfiles(void) {
+  log_section("DOTFILES");
+  /* TODO */
+}
+
+static void stage_cleanup(void) {
+  log_section("CLEANUP");
+  /* TODO */
+}
+
+static const installer_fn github_installers[] = {
+  install_fastfetch,
+  install_fzf,
+  install_yazi,
+  install_lazygit,
+  install_neovim,
+  NULL
+};
+
+static void stage_github(void) {
+  puts("\n=== Building GitHub projects ===");
+
+  for(size_t i = 0; github_installers[i] != NULL; ++i) {
+    github_installers[i]();
+  }
+}
+
+static const installer_fn node_installers[] = {
+  install_pnpm,
+  install_prettier,
+  install_typescript,
+  install_eslint,
+  NULL
+};
+
+static const installer_fn rust_installers[] = {
+  install_bat,
+  install_eza,
+  install_fd,
+  install_ripgrep,
+  NULL
+};
+
+static void stage_flatpak(void) {
+  log_section("FLATPAK");
+  install_flatpak();
+  install_flatpak_packages();
+}
+
+static void stage_snap(void) {
+  log_section("SNAP");
+  install_snap_packages();
+}
+
+static void stage_pnpm(void) {
+  log_section("PNPM");
+  install_pnpm();
+}
+
+static void stage_node(void) {
+  log_section("NODE PACKAGES");
+
+  for(size_t i = 0; node_installers[i] != NULL; ++i) {
+    node_installers[i]();
+  }
+}
+
+static void stage_rust(void) {
+  log_section("RUST");
+  install_rust_toolchain();
+
+  for(size_t i = 0; rust_installers[i] != NULL; ++i) {
+    rust_installers[i]();
+  }
+}
+
+static void stage_github(void) {
+  log_section("GITHUB PROJECTS");
+
+  for(size_t i = 0; github_installers[i] != NULL; ++i) {
+    github_installers[i]();
+  }
+}
+
+static void stage_fonts(void) {
+  log_section("FONTS");
+  install_fonts();
+}
+
+static void stage_dotfiles(void) {
+  log_section("DOTFILES");
+  configure_dotfiles();
+}
+
+static void stage_cleanup(void) {
+  log_section("CLEANUP");
+  cleanup_build_directories();
+  remove_unused_packages();
+}
+
+static void install_unusual_packages(void) {
+  stage_flatpak();
+  stage_snap();
+  stage_pnpm();
+  stage_node();
+  stage_rust();
+  stage_github();
+  stage_fonts();
+  stage_dotfiles();
+  stage_cleanup();
+}
+
+/*
+   ============================================================================
+   Installation stages for non-APT software (END)
+   ============================================================================
+*/
 
 void install_command(char *command_2_install_apps) { // install, -S etc.
   int totalLines = 0;
@@ -1183,9 +1694,6 @@ void run_backup(void) {
 
   fclose(fp_dirs);
   fclose(fp_dest);
-  //free(dirs_file);
-  //free(dest_file);
-  //free(expanded_backup_root);
 
   if(backup_attempted || DRY_RUN) {
     backup_system_configs(expanded_backup_root);

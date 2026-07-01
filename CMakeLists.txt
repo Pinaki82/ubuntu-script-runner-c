@@ -15,7 +15,13 @@ include(cmake/variables.cmake)
 
 # ---- Declare executable ----
 
-add_executable(installscriptrunner_exe source/script.c)
+add_executable(
+    installscriptrunner_exe
+    source/script.c
+    source/runner.c
+    source/git_utils.c
+    source/dotfile.c
+)
 add_executable(installscriptrunner::exe ALIAS installscriptrunner_exe)
 
 set_property(TARGET installscriptrunner_exe PROPERTY OUTPUT_NAME installscriptrunner)
