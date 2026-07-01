@@ -59,6 +59,7 @@ void copy_file(const char *src, const char *dest);
 void copy_directory(const char *src, const char *backup_root);
 void install_config_dir(void);
 void ensure_parent_directory(const char *path);
+void backup_system_configs(const char *backup_root);
 void run_backup(void);
 
 // Function to read from a text file line by line
@@ -983,6 +984,60 @@ void ensure_parent_directory(const char *path) {
   }
 }
 
+void backup_system_configs(
+        const char *backup_root
+) {
+  char cmd[PATH_MAX * 2];
+  printf("Backup root = %s\n", backup_root);
+  printf(
+          "\nBacking up system configuration files...\n"
+  );
+
+  if(DRY_RUN) {
+    printf(
+            "[DRY RUN] crontab -l > "
+            "\"%s/user-crontab.txt\"\n",
+            backup_root
+    );
+    printf(
+            "[DRY RUN] sudo crontab -l > "
+            "\"%s/root-crontab.txt\"\n",
+            backup_root
+    );
+    printf(
+            "[DRY RUN] sudo cp /etc/fstab "
+            "\"%s/fstab.txt\"\n",
+            backup_root
+    );
+    return;
+  }
+
+  snprintf(
+          cmd,
+          sizeof(cmd),
+          "crontab -l > "
+          "\"%s/user-crontab.txt\" 2>/dev/null",
+          backup_root
+  );
+  (void)system(cmd);
+  snprintf(
+          cmd,
+          sizeof(cmd),
+          "sudo crontab -l > "
+          "\"%s/root-crontab.txt\" 2>/dev/null",
+          backup_root
+  );
+  (void)system(cmd);
+  snprintf(
+          cmd,
+          sizeof(cmd),
+          "sudo cat /etc/fstab > "
+          "\"%s/fstab.txt\"",
+          backup_root
+  );
+  (void)system(cmd);
+}
+
 void run_backup(void) {
   if(system("command -v rsync >/dev/null 2>&1") != 0) {
     fprintf(stderr,
@@ -1128,6 +1183,15 @@ void run_backup(void) {
 
   fclose(fp_dirs);
   fclose(fp_dest);
+  //free(dirs_file);
+  //free(dest_file);
+  //free(expanded_backup_root);
+
+  if(backup_attempted || DRY_RUN) {
+    backup_system_configs(expanded_backup_root);
+    log_section("\nBACKED UP EXPANDED BACKUP ROOT (crontab, fstab, etc.\n)");
+  }
+
   free(dirs_file);
   free(dest_file);
   free(expanded_backup_root);
